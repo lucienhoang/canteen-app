@@ -65,8 +65,17 @@ Sau đó lên GitHub bấm **Compare & pull request**, chọn đích là `develo
 - Mỗi PR chỉ làm **một việc**, nhỏ và gọn (một màn hình hoặc một tính năng). PR nhỏ thì dễ review và ít xung đột.
 - Trước khi tạo PR: `flutter test` và `flutter analyze` phải sạch, và app phải chạy được.
 - Người còn lại review trong vòng 1 ngày. Có chỗ cần sửa thì comment ngay trên PR, sửa xong push thêm lên cùng nhánh, PR tự cập nhật.
-- Review xong thì merge vào `develop`, rồi xóa nhánh đã làm xong.
-- Merge xong thì về máy: `git checkout develop` rồi `git pull`.
+- Review xong thì merge vào `develop`, rồi bấm **Delete branch** trên GitHub để xóa nhánh trên mạng.
+- Sau khi merge, dọn dẹp trên máy của mình:
+
+```
+git checkout develop
+git pull                             # lấy bản develop đã gộp code
+git branch -d feature/ten-viec       # xóa nhánh đã làm xong ở máy
+git fetch --prune                    # xóa các nhánh đã bị xóa trên GitHub khỏi danh sách
+```
+
+Dùng `-d` (chữ thường) thì Git chỉ xóa khi nhánh đã được gộp, nên không lo xóa nhầm việc chưa xong. Nếu Git báo nhánh "chưa được gộp" dù bạn đã merge PR xong, hỏi nhau trước khi dùng `-D`.
 
 ## 6. Cấu trúc thư mục và phân việc
 
