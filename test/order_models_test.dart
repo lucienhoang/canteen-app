@@ -4,6 +4,7 @@ import 'package:canteen_app/data/models/order_item.dart';
 import 'package:canteen_app/data/models/order_status.dart';
 
 void main() {
+  /// Nhóm kiểm thử đơn vị cho Model [OrderItem]
   group('OrderItem', () {
     test('subtotal = priceAtOrder * quantity', () {
       const item = OrderItem(
@@ -12,6 +13,8 @@ void main() {
         priceAtOrder: 35000,
         quantity: 2,
       );
+
+      // Kiểm tra thành tiền: 35.000 x 2 = 70.000
       expect(item.subtotal, 70000);
     });
 
@@ -25,12 +28,14 @@ void main() {
       final updated = item.copyWith(quantity: 3);
 
       expect(updated.quantity, 3);
-      expect(updated.menuItemName, 'Cơm sườn'); // giữ nguyên
-      expect(updated.priceAtOrder, 35000); // giữ nguyên
+      expect(updated.menuItemName, 'Cơm sườn'); // giữ nguyên món gốc
+      expect(updated.priceAtOrder, 35000); // giữ nguyên giá gốc
     });
   });
 
+  /// Nhóm kiểm thử đơn vị cho Model [Order]
   group('Order', () {
+    // Dữ liệu món ăn mẫu dùng chung cho các bài test trong group
     final sampleItems = [
       const OrderItem(
         menuItemId: 1,
@@ -53,7 +58,7 @@ void main() {
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),
       );
-      // (35000*2) + (5000*1) = 75000
+      // Phép tính: (35.000 * 2) + (5.000 * 1) = 75.000
       expect(order.totalAmount, 75000);
     });
 
@@ -64,6 +69,8 @@ void main() {
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),
       );
+
+      // Đơn mới tạo phải mang trạng thái pending
       expect(order.status, OrderStatus.pending);
     });
 
@@ -77,7 +84,10 @@ void main() {
       final updated = order.copyWith(status: OrderStatus.preparing);
 
       expect(updated.status, OrderStatus.preparing);
-      expect(updated.totalAmount, order.totalAmount); // items không đổi
+      expect(
+        updated.totalAmount,
+        order.totalAmount,
+      ); // Danh sách items không đổi
     });
 
     test('totalAmount = 0 khi giỏ hàng rỗng', () {
@@ -87,6 +97,8 @@ void main() {
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),
       );
+
+      // Kiểm tra trường hợp danh sách món trống
       expect(order.totalAmount, 0);
     });
   });
