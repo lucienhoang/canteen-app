@@ -20,7 +20,7 @@ class _CartScreenState extends State<CartScreen> {
     super.initState();
     // Khởi tạo dữ liệu giả lập để kiểm thử giao diện trong giai đoạn phát triển.
     // TODO: Xóa đoạn mock này khi ghép nối nút "Thêm vào giỏ" từ MenuScreen.
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final cart = context.read<CartViewModel>();
       if (cart.isEmpty) {
         cart.addItem(
