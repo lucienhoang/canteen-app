@@ -26,7 +26,8 @@ class CanteenApp extends StatelessWidget {
           create: (_) => MenuViewmodel(MockMenuRepository())..load(),
         ),
         ChangeNotifierProvider(
-          create: (_) => CartViewModel(orderRepository: MockOrderRepository()),
+          create: (_) =>
+              CartViewModel(orderRepository: SqliteOrderRepository()),
         ),
       ],
 
