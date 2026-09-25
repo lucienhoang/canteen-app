@@ -65,4 +65,30 @@ class Order {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  // Dùng khi lưu vào bảng orders trong SQLite. items lưu riêng ở bảng
+  // order_items nên không có trong map này.
+  Map<String, dynamic> toMap() {
+    return {
+      'user_id': userId,
+      'status': status.name,
+      'pickup_time': pickupTime.toIso8601String(),
+      'note': note,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
+
+  // items được truyền riêng vì SQLite lưu orders và order_items ở 2 bảng
+  // khác nhau — Repository sẽ query cả 2 bảng rồi ráp lại bằng hàm này.
+  factory Order.fromMap(Map<String, dynamic> map, List<OrderItem> items) {
+    return Order(
+      id: map['id'] as int?,
+      userId: map['user_id'] as int,
+      items: items,
+      status: OrderStatus.values.byName(map['status'] as String),
+      pickupTime: DateTime.parse(map['pickup_time'] as String),
+      note: map['note'] as String?,
+      createdAt: DateTime.parse(map['created_at'] as String),
+    );
+  }
 }

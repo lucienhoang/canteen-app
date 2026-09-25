@@ -1,5 +1,9 @@
+import 'package:canteen_app/data/local/database_helper.dart';
+import 'package:sqflite/sqlite_api.dart';
+
 import '../models/order.dart';
 import '../models/order_status.dart';
+import '../models/order_item.dart';
 
 /// Hợp đồng quy định các thao tác bắt buộc phải có để lưu/đọc Đơn hàng.
 /// Sau này sẽ có thêm SqliteOrderRepository triển khai bằng sqflite,
@@ -68,5 +72,102 @@ class MockOrderRepository implements OrderRepository {
 
     // Thay thế object cũ bằng object mới đã được cập nhật trạng thái
     _orders[index] = _orders[index].copyWith(status: newStatus);
+  }
+}
+
+/// Triển khai [OrderRepository] sử dụng cơ sở dữ liệu SQLite dưới máy.
+class SqliteOrderRepository implements OrderRepository {
+  /// Khởi tạo repository với [DatabaseHelper].
+  /// Mặc định dùng [DatabaseHelper.instance] nếu không truyền vào.
+  SqliteOrderRepository({DatabaseHelper? databaseHelper})
+    : _dbHelper = databaseHelper ?? DatabaseHelper.instance;
+
+  final DatabaseHelper _dbHelper;
+
+  @override
+  Future<Order> createOrder(Order order) async {
+    final db = await _dbHelper.database;
+
+    // Sử dụng Transaction để đảm bảo tính toàn vẹn dữ liệu giữa bảng orders và order_items
+    return db.transaction<Order>((txn) async {
+      // 1. Thêm thông tin chung của đơn hàng vào bảng orders
+      final orderId = await txn.insert('orders', {
+        'user_id': order.userId,
+        'status': order.status.name,
+        'pickup_time': order.pickupTime.toIso8601String(),
+        'note': order.note,
+        'created_at': order.createdAt.toIso8601String(),
+      });
+
+      // 2. Thêm danh sách chi tiết các món ăn vào bảng order_items
+      for (final item in order.items) {
+        await txn.insert('order_items', {
+          'order_id': orderId,
+          'menu_item_id': item.menuItemId,
+          'menu_item_name': item.menuItemName,
+          'price_at_order': item.priceAtOrder,
+          'quantity': item.quantity,
+        });
+      }
+      // 3. Trả về đối tượng Order mới đã được gắn ID tự tăng từ SQLite
+      return order.copyWith(id: orderId);
+    });
+  }
+
+  @override
+  Future<List<Order>> getOrdersByUser(int userID) async {
+    final db = await _dbHelper.database;
+    final orderMaps = await db.query(
+      'orders',
+      where: 'user_id = ?',
+      whereArgs: [userID],
+      orderBy: 'created_at DESC', // Sắp xếp đơn hàng mới nhất lên đầu
+    );
+
+    final orders = <Order>[];
+    for (final map in orderMaps) {
+      final items = await _getItemsForOrder(db, map['id'] as int);
+      orders.add(Order.fromMap(map, items));
+    }
+    return orders;
+  }
+
+  @override
+  Future<Order?> getOrderById(int id) async {
+    final db = await _dbHelper.database;
+    final orderMaps = await db.query(
+      'orders',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (orderMaps.isEmpty) return null;
+
+    final items = await _getItemsForOrder(db, id);
+    return Order.fromMap(orderMaps.first, items);
+  }
+
+  @override
+  Future<void> updateOrderStatus(int orderId, OrderStatus newStatus) async {
+    final db = await _dbHelper.database;
+    final count = await db.update(
+      'orders',
+      {'status': newStatus.name},
+      where: 'id = ?',
+      whereArgs: [orderId],
+    );
+    if (count == 0) {
+      throw StateError('Không tìm thấy đơn hàng có id $orderId');
+    }
+  }
+
+  /// Hàm phụ trợ lấy danh sách OrderItem theo orderId
+  Future<List<OrderItem>> _getItemsForOrder(Database db, int orderId) async {
+    final itemMaps = await db.query(
+      'order_items',
+      where: 'order_id = ?',
+      whereArgs: [orderId],
+    );
+    return itemMaps.map(OrderItem.fromMap).toList();
   }
 }
