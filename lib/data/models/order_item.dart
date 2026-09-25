@@ -50,4 +50,24 @@ class OrderItem {
       quantity: quantity ?? this.quantity,
     );
   }
+
+  /// Lưu/đọc từ bảng order_items trong SQLite.
+  Map<String, dynamic> toMap() {
+    return {
+      'menu_item_id': menuItemId,
+      'menu_item_name': menuItemName,
+      'price_at_order': priceAtOrder,
+      'quantity': quantity,
+    };
+  }
+
+  factory OrderItem.fromMap(Map<String, dynamic> map) {
+    return OrderItem(
+      id: map['id'] as int?,
+      menuItemId: map['menu_item_id'] as int,
+      menuItemName: map['menu_item_name'] as String,
+      priceAtOrder: map['price_at_order'] as int,
+      quantity: map['quantity'] as int,
+    );
+  }
 }
