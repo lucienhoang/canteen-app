@@ -8,6 +8,10 @@ import 'features/menu/menu_viewmodel.dart';
 import 'data/repositories/order_repository.dart';
 import 'features/cart/cart_viewmodel.dart';
 
+// import 'package:canteen_app/features/cart/cart_screen.dart';
+
+// import 'features/orders/order_tracking_screen.dart';
+
 // import 'features/cart/cart_screen.dart';
 
 void main() {
@@ -34,7 +38,7 @@ class CanteenApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Căn tin',
         theme: ThemeData(colorSchemeSeed: Colors.orange, useMaterial3: true),
-        home: const MenuScreen(),
+        home: MenuScreen(),
       ),
     );
   }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/repositories/order_repository.dart';
 import '../../data/models/menu_item.dart';
 import 'cart_viewmodel.dart';
+import '../orders/order_tracking_screen.dart';
 
 /// Màn hình Giỏ hàng - hiển thị danh sách các món đang chọn,
 /// cho phép điều chỉnh số lượng, xóa món và thực hiện đặt đơn (Checkout).
@@ -50,6 +52,15 @@ class _CartScreenState extends State<CartScreen> {
     if (order != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Đặt đơn thành công! Mã đơn ${order.id}")),
+      );
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => OrderTrackingScreen(
+            orderId: order.id!,
+            orderRepository: SqliteOrderRepository(),
+          ),
+        ),
       );
     } else if (cart.errorMessage != null) {
       ScaffoldMessenger.of(context)

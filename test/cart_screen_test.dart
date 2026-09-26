@@ -70,4 +70,20 @@ void main() {
       expect(find.text('Giỏ hàng trống'), findsOneWidget);
     },
   );
+
+  testWidgets('checkout thành công thì điều hướng sang OrderTrackingScreen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildTestApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Đặt đơn'));
+    await tester.pump(); // bắt đầu loading
+    await tester.pump(
+      const Duration(milliseconds: 900),
+    ); // qua delay 800ms giả lập
+    await tester.pumpAndSettle(); // đợi animation chuyển trang xong
+
+    expect(find.text('Theo dõi đơn hàng'), findsOneWidget);
+  });
 }
