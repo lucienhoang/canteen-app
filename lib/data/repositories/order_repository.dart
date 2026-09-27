@@ -20,6 +20,9 @@ abstract class OrderRepository {
 
   /// Cập nhật trạng thái của 1 đơn hàng đã tồn tại.
   Future<void> updateOrderStatus(int orderId, OrderStatus newStatus);
+
+  /// Lấy toàn bộ đơn hàng trong hệ thống, mới nhất trước (dùng cho màn hình nhân viên).
+  Future<List<Order>> getAllOrders();
 }
 
 /// Dữ liệu giả lập cho Đơn hàng, lưu tạm trong bộ nhớ RAM (List).
@@ -72,6 +75,14 @@ class MockOrderRepository implements OrderRepository {
 
     // Thay thế object cũ bằng object mới đã được cập nhật trạng thái
     _orders[index] = _orders[index].copyWith(status: newStatus);
+  }
+
+  @override
+  Future<List<Order>> getAllOrders() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    final result = List<Order>.of(_orders);
+    result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return result;
   }
 }
 
@@ -169,5 +180,18 @@ class SqliteOrderRepository implements OrderRepository {
       whereArgs: [orderId],
     );
     return itemMaps.map(OrderItem.fromMap).toList();
+  }
+
+  @override
+  Future<List<Order>> getAllOrders() async {
+    final db = await _dbHelper.database;
+    final orderMaps = await db.query('orders', orderBy: 'created_at DESC');
+
+    final orders = <Order>[];
+    for (final map in orderMaps) {
+      final items = await _getItemsForOrder(db, map['id'] as int);
+      orders.add(Order.fromMap(map, items));
+    }
+    return orders;
   }
 }
