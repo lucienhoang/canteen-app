@@ -54,6 +54,7 @@ class _CartScreenState extends State<CartScreen> {
         SnackBar(content: Text("Đặt đơn thành công! Mã đơn ${order.id}")),
       );
 
+      // Chuyển qua man fhinfh theo dõi trạng thái đơn khi đã đặt thành công
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => OrderTrackingScreen(
