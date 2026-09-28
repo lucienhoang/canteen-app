@@ -20,6 +20,9 @@ class MenuViewmodel extends ChangeNotifier {
   List<MenuItem> _items = [];
   int? _selectedCategoryId; // null nghĩa là đang chọn "Tất cả"
 
+  //Thêm biến trạng thái lưu từ khóa tìm kiếm ---
+  String _searchQuery = '';
+
   // --- Getter cung cấp dữ liệu an toàn cho tầng UI ---
 
   /// Trạng thái đang tải dữ liệu
@@ -34,11 +37,17 @@ class MenuViewmodel extends ChangeNotifier {
   /// Id của danh mục hiện đang được chọn
   int? get selectedCategoryId => _selectedCategoryId;
 
-  /// Danh sách món được lọc tự động dựa theo theo danh mục đang chọn.
-  /// Nếu [_selectedCategoryId] là null thì trả về toàn bộ danh sách món.
+  //Thêm getter cho từ khóa tìm kiếm ---
+  String get searchQuery => _searchQuery;
+
+  //Cập nhật logic visibleItems để lọc kết hợp cả Danh mục và Từ khóa ---
+  /// Danh sách món được lọc tự động dựa theo theo danh mục đang chọn và từ khoá tìm kiếm.
   List<MenuItem> get visibleItems {
-    if (_selectedCategoryId == null) return _items;
-    return _items.where((i) => i.categoryId == _selectedCategoryId).toList();
+    return _items.where((i) {
+      final matchCategory = _selectedCategoryId == null || i.categoryId == _selectedCategoryId;
+      final matchSearch = _searchQuery.isEmpty || i.name.toLowerCase().contains(_searchQuery);
+      return matchCategory && matchSearch;
+    }).toList();
   }
 
   /// Tải danh sách danh mục và món từ Repository.
@@ -63,5 +72,12 @@ class MenuViewmodel extends ChangeNotifier {
   void selectCategory(int? categoryId) {
     _selectedCategoryId = categoryId;
     notifyListeners(); // Thông báo UI cập nhật lại danh sách hiển thị
+  }
+
+  //Thêm hàm xử lý tìm kiếm ở cuối class ---
+  // Lưu từ khoá tìm kiếm (chuyển về chữ thường để dễ so sánh) và thông báo cho UI vẽ lại
+  void search(String query) {
+    _searchQuery = query.toLowerCase();
+    notifyListeners();
   }
 }
