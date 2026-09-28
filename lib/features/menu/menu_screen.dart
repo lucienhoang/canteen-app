@@ -53,6 +53,22 @@ class MenuScreen extends StatelessWidget {
     // 3. Trạng thái hiển thị dữ liệu thành công
     return Column(
       children: [
+    //Thanh tìm kiếm (TextField)
+    Padding(
+    padding: const EdgeInsets.all(12.0),
+    child: TextField(
+    decoration: InputDecoration(
+    hintText: 'Tìm kiếm món ăn...',
+    prefixIcon: const Icon(Icons.search),
+    border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8.0),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+    ),
+    // Lắng nghe sự kiện gõ chữ và gọi hàm search bên ViewModel
+    onChanged: (value) => context.read<MenuViewmodel>().search(value),
+    ),
+    ),
         // Danh sách các mục cuộn ngang (Horizontal List)
         SizedBox(
           height: 56,
