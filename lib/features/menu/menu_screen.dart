@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'menu_item_detail_screen.dart';//màng hình chi tiết
 import 'menu_viewmodel.dart';
 
 /// Màn hình hiển thị thực đơn (UI Layer).
@@ -86,6 +87,15 @@ class MenuScreen extends StatelessWidget {
                       ),
                 // Vô hiệu hóa (làm mờ) item nếu hết hàng
                 enabled: item.isAvailable,
+                // Xử lý sự kiện chọn món: điều hướng sang màn hình chi tiết và truyền dữ liệu (item).
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MenuItemDetailScreen(item: item),
+                    ),
+                  );
+                },
               );
             },
           ),
