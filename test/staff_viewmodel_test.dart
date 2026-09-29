@@ -20,7 +20,10 @@ void main() {
 
   setUp(() {
     repository = MockOrderRepository();
-    viewModel = StaffViewModel(orderRepository: repository);
+    viewModel = StaffViewModel(
+      orderRepository: repository,
+      onStatusChanged: (_) async {}, // bỏ qua thông báo thật khi test
+    );
   });
 
   test('activeOrders bỏ qua đơn completed và cancelled', () async {

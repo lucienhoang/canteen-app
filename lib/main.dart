@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/notifications/notification_service.dart';
+
 import 'data/repositories/menu_repository.dart';
 import 'features/menu/menu_screen.dart';
 import 'features/menu/menu_viewmodel.dart';
@@ -8,13 +10,10 @@ import 'features/menu/menu_viewmodel.dart';
 import 'data/repositories/order_repository.dart';
 import 'features/cart/cart_viewmodel.dart';
 
-// import 'package:canteen_app/features/cart/cart_screen.dart';
-
-// import 'features/orders/order_tracking_screen.dart';
-
-// import 'features/cart/cart_screen.dart';
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.instance.initialize();
+  await NotificationService.instance.requestPermission();
   runApp(const CanteenApp());
 }
 
