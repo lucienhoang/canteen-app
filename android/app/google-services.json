@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "502834110731",
+    "project_id": "canteen-app-7cb4d",
+    "storage_bucket": "canteen-app-7cb4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502834110731:android:45798b025228078e5b820e",
+        "android_client_info": {
+          "package_name": "com.example.canteen_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEfesYNx9FdA1B4bKnwjAfSnfAULfX4B8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
