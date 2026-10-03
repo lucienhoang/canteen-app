@@ -13,7 +13,7 @@ abstract class OrderRepository {
   Future<Order> createOrder(Order order);
 
   /// Lấy danh sách đơn hàng của 1 người dùng, món mới nhất xếp trước.
-  Future<List<Order>> getOrdersByUser(int userId);
+  Future<List<Order>> getOrdersByUser(String userId);
 
   /// Lấy 1 đơn hàng theo id, trả về null nếu không tìm thấy.
   Future<Order?> getOrderById(int id);
@@ -43,7 +43,7 @@ class MockOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<List<Order>> getOrdersByUser(int userId) async {
+  Future<List<Order>> getOrdersByUser(String userId) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     // Lọc đơn theo userId
@@ -126,7 +126,7 @@ class SqliteOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<List<Order>> getOrdersByUser(int userID) async {
+  Future<List<Order>> getOrdersByUser(String userID) async {
     final db = await _dbHelper.database;
     final orderMaps = await db.query(
       'orders',

@@ -69,7 +69,7 @@ void main() {
 
   test('checkout với giỏ trống trả về null và báo lỗi', () async {
     final result = await viewModel.checkout(
-      userId: 1,
+      userId: 'u1',
       pickupTime: DateTime(2026, 10, 1, 11, 30),
     );
 
@@ -82,7 +82,7 @@ void main() {
     viewModel.addItem(traDa);
 
     final result = await viewModel.checkout(
-      userId: 1,
+      userId: 'u1',
       pickupTime: DateTime(2026, 10, 1, 11, 30),
       note: 'Ít cay',
     );
@@ -90,7 +90,7 @@ void main() {
     // Kiểm tra Order trả về
     expect(result, isNotNull);
     expect(result!.id, isNotNull); // Đã được MockOrderRepository gán ID
-    expect(result.userId, 1);
+    expect(result.userId, 'u1');
     expect(result.note, 'Ít cay');
     expect(result.totalAmount, 40000);
 

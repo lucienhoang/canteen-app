@@ -1,3 +1,4 @@
+import 'package:canteen_app/features/cart/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -37,7 +38,7 @@ class CanteenApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Căn tin',
         theme: ThemeData(colorSchemeSeed: Colors.orange, useMaterial3: true),
-        home: MenuScreen(),
+        home: CartScreen(),
       ),
     );
   }

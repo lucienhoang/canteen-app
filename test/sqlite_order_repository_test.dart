@@ -35,7 +35,7 @@ void main() {
   test('createOrder lưu Order và trả về id thật từ SQLite', () async {
     final result = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 24, 9, 0),
@@ -48,7 +48,7 @@ void main() {
   test('getOrderById đọc lại đúng Order kèm items từ 2 bảng', () async {
     final created = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         note: 'Ít cay',
@@ -68,7 +68,7 @@ void main() {
   test('getOrdersByUser chỉ trả đơn của đúng user', () async {
     await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 24, 9, 0),
@@ -76,17 +76,17 @@ void main() {
     );
     await repository.createOrder(
       Order(
-        userId: 2,
+        userId: 'u2',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 12, 0),
         createdAt: DateTime(2026, 9, 24, 9, 5),
       ),
     );
 
-    final orders = await repository.getOrdersByUser(1);
+    final orders = await repository.getOrdersByUser("u1");
 
     expect(orders.length, 1);
-    expect(orders.first.userId, 1);
+    expect(orders.first.userId, 'u1');
   });
 
   test(
@@ -94,7 +94,7 @@ void main() {
     () async {
       final created = await repository.createOrder(
         Order(
-          userId: 1,
+          userId: 'u1',
           items: sampleItems,
           pickupTime: DateTime(2026, 10, 1, 11, 30),
           createdAt: DateTime(2026, 9, 24, 9, 0),

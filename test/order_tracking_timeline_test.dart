@@ -14,7 +14,7 @@ void main() {
   ) async {
     final order = await repo.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: const [
           OrderItem(
             menuItemId: 1,

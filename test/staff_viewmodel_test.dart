@@ -29,7 +29,7 @@ void main() {
   test('activeOrders bỏ qua đơn completed và cancelled', () async {
     final o1 = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 26, 9, 0),
@@ -37,7 +37,7 @@ void main() {
     );
     final o2 = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 12, 0),
         createdAt: DateTime(2026, 9, 26, 9, 5),
@@ -56,7 +56,7 @@ void main() {
   test('changeStatus đổi đúng trạng thái khi hợp lệ', () async {
     final order = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 26, 9, 0),
@@ -75,7 +75,7 @@ void main() {
   test('changeStatus bỏ qua khi chuyển trạng thái không hợp lệ', () async {
     final order = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 26, 9, 0),

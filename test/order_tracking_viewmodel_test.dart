@@ -26,7 +26,7 @@ void main() {
   test('loadOrder tải đúng đơn theo id', () async {
     final created = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 25, 9, 0),

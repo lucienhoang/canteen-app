@@ -16,7 +16,7 @@ void main() {
 
   Order buildOrder(OrderStatus status) => Order(
     id: 1,
-    userId: 1,
+    userId: 'u1',
     items: sampleItems,
     status: status,
     pickupTime: DateTime(2026, 10, 1, 11, 30),
