@@ -25,8 +25,13 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'canteen_app.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) => _createTables(db),
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await db.execute('DROP TABLE IF EXISTS order_items');
+        await db.execute('DROP TABLE IF EXISTS orders');
+        await _createTables(db);
+      },
     );
   }
 
@@ -36,7 +41,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
+        user_id TEXT NOT NULL,
         status TEXT NOT NULL,
         pickup_time TEXT NOT NULL,
         note TEXT,

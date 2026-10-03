@@ -25,7 +25,7 @@ void main() {
   test('createOrder gán id tự tăng dần', () async {
     final order1 = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22, 9, 0),
@@ -33,7 +33,7 @@ void main() {
     );
     final order2 = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 12, 0),
         createdAt: DateTime(2026, 9, 22, 9, 5),
@@ -48,7 +48,7 @@ void main() {
   test('getOrdersByUser chỉ trả đơn của đúng user, mới nhất trước', () async {
     await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22, 9, 0),
@@ -56,7 +56,7 @@ void main() {
     );
     await repository.createOrder(
       Order(
-        userId: 2, // User khác (không được bao gồm trong kết quả)
+        userId: 'u2', // User khác (không được bao gồm trong kết quả)
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 12, 0),
         createdAt: DateTime(2026, 9, 22, 9, 5),
@@ -64,7 +64,7 @@ void main() {
     );
     await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 13, 0),
         createdAt: DateTime(
@@ -77,11 +77,11 @@ void main() {
       ),
     );
 
-    final orders = await repository.getOrdersByUser(1);
+    final orders = await repository.getOrdersByUser("u1");
 
     // Kiểm tra số lượng và tính chính xác của filter
     expect(orders.length, 2);
-    expect(orders.every((o) => o.userId == 1), true);
+    expect(orders.every((o) => o.userId == 'u1'), true);
     // Đơn tạo lúc 10:00 phải xếp trước đơn lúc 09:00
     expect(
       orders.first.createdAt,
@@ -92,7 +92,7 @@ void main() {
   test('getOrderById trả về đúng đơn, null nếu không có', () async {
     final created = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22, 9, 0),
@@ -111,7 +111,7 @@ void main() {
   test('updateOrderStatus đổi đúng trạng thái', () async {
     final created = await repository.createOrder(
       Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22, 9, 0),

@@ -53,7 +53,7 @@ void main() {
 
     test('totalAmount cộng dồn đúng từ nhiều OrderItem', () {
       final order = Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),
@@ -64,7 +64,7 @@ void main() {
 
     test('status mặc định là pending khi không truyền vào', () {
       final order = Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),
@@ -76,7 +76,7 @@ void main() {
 
     test('copyWith đổi status mà không ảnh hưởng field khác', () {
       final order = Order(
-        userId: 1,
+        userId: 'u1',
         items: sampleItems,
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),
@@ -92,7 +92,7 @@ void main() {
 
     test('totalAmount = 0 khi giỏ hàng rỗng', () {
       final order = Order(
-        userId: 1,
+        userId: 'u1',
         items: const [],
         pickupTime: DateTime(2026, 10, 1, 11, 30),
         createdAt: DateTime(2026, 9, 22),

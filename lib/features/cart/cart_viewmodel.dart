@@ -90,7 +90,7 @@ class CartViewModel extends ChangeNotifier {
   /// Tạo đơn hàng chính thức từ giỏ hiện tại và lưu qua [OrderRepository].
   /// Trả về [Order] đã tạo thành công, hoặc [null] nếu xảy ra lỗi.
   Future<Order?> checkout({
-    required int userId,
+    required String userId,
     required DateTime pickupTime,
     String? note,
   }) async {

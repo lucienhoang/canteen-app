@@ -11,7 +11,7 @@ class Order {
   final int? id;
 
   /// Mã người dùng đặt đơn
-  final int userId;
+  final String userId;
 
   /// Danh sách các món trong đơn hàng.
   final List<OrderItem> items;
@@ -48,7 +48,7 @@ class Order {
   /// không sửa trực tiếp object đang được UI theo dõi.
   Order copyWith({
     int? id,
-    int? userId,
+    String? userId,
     List<OrderItem>? items,
     OrderStatus? status,
     DateTime? pickupTime,
@@ -83,7 +83,7 @@ class Order {
   factory Order.fromMap(Map<String, dynamic> map, List<OrderItem> items) {
     return Order(
       id: map['id'] as int?,
-      userId: map['user_id'] as int,
+      userId: map['user_id'] as String,
       items: items,
       status: OrderStatus.values.byName(map['status'] as String),
       pickupTime: DateTime.parse(map['pickup_time'] as String),

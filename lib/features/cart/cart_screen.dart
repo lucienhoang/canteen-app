@@ -42,7 +42,7 @@ class _CartScreenState extends State<CartScreen> {
   /// Xử lý logic khi bấm nút Đặt đơn
   Future<void> _handleCheckout(CartViewModel cart) async {
     final order = await cart.checkout(
-      userId: 1, // TODO: Thay thế bằng ID của User đang đăng nhập
+      userId: "demo-user", // TODO: Thay thế bằng ID của User đang đăng nhập
       pickupTime: DateTime.now().add(const Duration(minutes: 30)),
     );
 
