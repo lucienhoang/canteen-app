@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
+
 import 'core/notifications/notification_service.dart';
 
 import 'data/repositories/menu_repository.dart';
@@ -12,6 +16,10 @@ import 'features/cart/cart_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint('Firebase OK: ${Firebase.app().options.projectId}');
+
   await NotificationService.instance.initialize();
   await NotificationService.instance.requestPermission();
   runApp(const CanteenApp());
