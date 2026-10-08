@@ -1,4 +1,3 @@
-import 'package:canteen_app/features/cart/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,12 +7,16 @@ import 'firebase_options.dart';
 
 import 'core/notifications/notification_service.dart';
 
+import 'data/repositories/auth_repository.dart';
 import 'data/repositories/menu_repository.dart';
+import 'data/repositories/order_repository.dart';
+
+import 'features/auth/auth_gate.dart';
+import 'features/auth/auth_viewmodel.dart';
+import 'features/cart/cart_viewmodel.dart';
 import 'features/menu/menu_screen.dart';
 import 'features/menu/menu_viewmodel.dart';
-
-import 'data/repositories/order_repository.dart';
-import 'features/cart/cart_viewmodel.dart';
+import 'features/staff/staff_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,11 +32,15 @@ void main() async {
 class CanteenApp extends StatelessWidget {
   const CanteenApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) =>
+              AuthViewModel(authRepository: MockAuthRepository())
+                ..restoreSession(),
+        ),
         ChangeNotifierProvider(
           create: (_) => MenuViewmodel(MockMenuRepository())..load(),
         ),
@@ -42,11 +49,13 @@ class CanteenApp extends StatelessWidget {
               CartViewModel(orderRepository: SqliteOrderRepository()),
         ),
       ],
-
       child: MaterialApp(
         title: 'Căn tin',
         theme: ThemeData(colorSchemeSeed: Colors.orange, useMaterial3: true),
-        home: CartScreen(),
+        home: AuthGate(
+          studentHome: const MenuScreen(),
+          staffHome: StaffScreen(orderRepository: SqliteOrderRepository()),
+        ),
       ),
     );
   }

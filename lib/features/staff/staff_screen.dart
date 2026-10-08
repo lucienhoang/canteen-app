@@ -6,6 +6,7 @@ import '../../data/models/order.dart';
 import '../../data/models/order_status.dart';
 import '../../data/repositories/order_repository.dart';
 import 'staff_viewmodel.dart';
+import '../auth/logout_button.dart';
 
 /// Màn hình nhân viên căn tin: xem đơn mới, cập nhật trạng thái đơn.
 class StaffScreen extends StatelessWidget {
@@ -32,7 +33,10 @@ class _StaffBody extends StatelessWidget {
     final priceFormat = NumberFormat.decimalPattern("vi");
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Đơn hàng - Nhân viên")),
+      appBar: AppBar(
+        title: const Text("Đơn hàng - Nhân viên"),
+        actions: const [LogoutButton()],
+      ),
       body: Builder(
         builder: (context) {
           if (vm.isLoading && vm.activeOrders.isEmpty) {

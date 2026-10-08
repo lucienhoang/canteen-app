@@ -6,6 +6,7 @@ import '../../data/repositories/order_repository.dart';
 import '../../data/models/menu_item.dart';
 import 'cart_viewmodel.dart';
 import '../orders/order_tracking_screen.dart';
+import '../auth/auth_viewmodel.dart';
 
 /// Màn hình Giỏ hàng - hiển thị danh sách các món đang chọn,
 /// cho phép điều chỉnh số lượng, xóa món và thực hiện đặt đơn (Checkout).
@@ -41,8 +42,12 @@ class _CartScreenState extends State<CartScreen> {
 
   /// Xử lý logic khi bấm nút Đặt đơn
   Future<void> _handleCheckout(CartViewModel cart) async {
+    // Lấy user TRƯỚC khi await, để không dùng context sau khi await
+    final user = context.read<AuthViewModel>().currentUser;
+    if (user == null) return; // chưa đăng nhập thì không đặt đơn
+
     final order = await cart.checkout(
-      userId: "demo-user", // TODO: Thay thế bằng ID của User đang đăng nhập
+      userId: user.id, // TODO: Thay thế bằng ID của User đang đăng nhập
       pickupTime: DateTime.now().add(const Duration(minutes: 30)),
     );
 
