@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import 'menu_item_detail_screen.dart';//màng hình chi tiết
+import 'menu_item_detail_screen.dart'; //màng hình chi tiết
 import 'menu_viewmodel.dart';
+import '../auth/logout_button.dart';
+import '../cart/cart_screen.dart';
 
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
@@ -17,7 +19,20 @@ class MenuScreen extends StatelessWidget {
     final vm = context.watch<MenuViewmodel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Menu căn tin")),
+      appBar: AppBar(
+        title: const Text("Menu căn tin"),
+        actions: [
+          IconButton(
+            tooltip: 'Giỏ hàng',
+            icon: const Icon(Icons.shopping_cart_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CartScreen()),
+            ),
+          ),
+          const LogoutButton(),
+        ],
+      ),
       body: _buildBody(context, vm),
     );
   }
@@ -53,22 +68,25 @@ class MenuScreen extends StatelessWidget {
     // 3. Trạng thái hiển thị dữ liệu thành công
     return Column(
       children: [
-    //Thanh tìm kiếm (TextField)
-    Padding(
-    padding: const EdgeInsets.all(12.0),
-    child: TextField(
-    decoration: InputDecoration(
-    hintText: 'Tìm kiếm món ăn...',
-    prefixIcon: const Icon(Icons.search),
-    border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8.0),
-    ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-    ),
-    // Lắng nghe sự kiện gõ chữ và gọi hàm search bên ViewModel
-    onChanged: (value) => context.read<MenuViewmodel>().search(value),
-    ),
-    ),
+        //Thanh tìm kiếm (TextField)
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Tìm kiếm món ăn...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 0,
+              ),
+            ),
+            // Lắng nghe sự kiện gõ chữ và gọi hàm search bên ViewModel
+            onChanged: (value) => context.read<MenuViewmodel>().search(value),
+          ),
+        ),
         // Danh sách các mục cuộn ngang (Horizontal List)
         SizedBox(
           height: 56,
