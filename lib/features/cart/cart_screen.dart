@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/repositories/order_repository.dart';
-import '../../data/models/menu_item.dart';
 import 'cart_viewmodel.dart';
 import '../orders/order_tracking_screen.dart';
 import '../auth/auth_viewmodel.dart';
@@ -18,23 +17,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Khởi tạo dữ liệu giả lập để kiểm thử giao diện trong giai đoạn phát triển.
-    // TODO: Xóa đoạn mock này khi ghép nối nút "Thêm vào giỏ" từ MenuScreen.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final cart = context.read<CartViewModel>();
-      if (cart.isEmpty) {
-        cart.addItem(
-          const MenuItem(id: 1, categoryId: 1, name: "Cơm Sườn", price: 35000),
-        );
-        cart.addItem(
-          const MenuItem(id: 2, categoryId: 2, name: 'Trà đá', price: 5000),
-        );
-      }
-    });
-  }
 
   // Định dạng hiển thị tiền tệ Việt Nam VNĐ
   final _priceFormat = NumberFormat.decimalPattern('vi');

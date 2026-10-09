@@ -38,7 +38,7 @@ class CanteenApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) =>
-              AuthViewModel(authRepository: MockAuthRepository())
+              AuthViewModel(MockAuthRepository())
                 ..restoreSession(),
         ),
         ChangeNotifierProvider(
