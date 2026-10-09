@@ -14,7 +14,7 @@ void main() {
   Future<Widget> buildTestApp({bool signedIn = true}) async {
     // MockAuthRepository không có Future.delayed nên await trực tiếp được,
     // không cần tester.runAsync.
-    final auth = AuthViewModel(authRepository: MockAuthRepository());
+    final auth = AuthViewModel(MockAuthRepository());
     if (signedIn) {
       await auth.signIn('2110001', '123456');
     }

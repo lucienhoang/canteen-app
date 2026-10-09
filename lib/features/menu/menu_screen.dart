@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import 'menu_item_detail_screen.dart'; //màng hình chi tiết
+import 'menu_item_detail_screen.dart';
 import 'menu_viewmodel.dart';
-import '../auth/logout_button.dart';
 import '../cart/cart_screen.dart';
+import '../cart/cart_viewmodel.dart';
+
 
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
@@ -19,18 +20,32 @@ class MenuScreen extends StatelessWidget {
     final vm = context.watch<MenuViewmodel>();
 
     return Scaffold(
+//Thêm actions vào AppBar chứa Icon Giỏ hàng kèm Badge
       appBar: AppBar(
         title: const Text("Menu căn tin"),
         actions: [
-          IconButton(
-            tooltip: 'Giỏ hàng',
-            icon: const Icon(Icons.shopping_cart_outlined),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CartScreen()),
-            ),
+          // Dùng Consumer hoặc watch để lắng nghe số lượng món trong giỏ
+          Builder(
+            builder: (context) {
+              final cartItemCount = context.watch<CartViewModel>().items.length;
+              return Badge(
+                label: Text('$cartItemCount'),
+                isLabelVisible: cartItemCount > 0, // Chỉ hiện khi có món
+                offset: const Offset(-8, 8),
+                child: IconButton(
+                  icon: const Icon(Icons.shopping_cart),
+                  onPressed: () {
+                    // Điều hướng sang màn hình giỏ hàng
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartScreen()),
+                    );
+                  },
+                ),
+              );
+            },
           ),
-          const LogoutButton(),
+          const SizedBox(width: 8),
         ],
       ),
       body: _buildBody(context, vm),
@@ -112,13 +127,27 @@ class MenuScreen extends StatelessWidget {
               return ListTile(
                 title: Text(item.name),
                 subtitle: Text('${priceFormat.format(item.price)}đ'),
-                // Nếu hết hàng thì hiện chữ "Hết hàng" màu đỏ ở cuối card
+                // Nếu còn hàng thì hiện Icon Thêm vào giỏ, nếu hết hàng thì hiện chữ "Hết hàng" màu đỏ
                 trailing: item.isAvailable
-                    ? null
-                    : const Text(
-                        "Hết hàng",
-                        style: TextStyle(color: Colors.red),
+                    ? IconButton(
+                  icon: const Icon(Icons.add_shopping_cart, color: Colors.green),
+                  onPressed: () {
+                    // Gọi ViewModel để thêm món vào giỏ
+                    context.read<CartViewModel>().addItem(item);
+
+                    // Hiện thông báo nhỏ cho người dùng biết
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Đã thêm ${item.name} vào giỏ'),
+                        duration: const Duration(seconds: 1),
                       ),
+                    );
+                  },
+                )
+                    : const Text(
+                  "Hết hàng",
+                  style: TextStyle(color: Colors.red),
+                ),
                 // Vô hiệu hóa (làm mờ) item nếu hết hàng
                 enabled: item.isAvailable,
                 // Xử lý sự kiện chọn món: điều hướng sang màn hình chi tiết và truyền dữ liệu (item).

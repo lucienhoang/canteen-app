@@ -13,8 +13,7 @@ enum AuthStatus {
 
 /// Giữ người đang đăng nhập và xử lý đăng nhập / đăng xuất.
 class AuthViewModel extends ChangeNotifier {
-  AuthViewModel({required AuthRepository authRepository})
-    : _authRepository = authRepository;
+  AuthViewModel(this._authRepository);
 
   final AuthRepository _authRepository;
 

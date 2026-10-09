@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/menu_item.dart';
+import 'package:provider/provider.dart';
+import '../cart/cart_viewmodel.dart';
 
 /// Màn hình hiển thị chi tiết của một món ăn trong thực đơn.
 ///
@@ -60,6 +62,37 @@ class MenuItemDetailScreen extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+
+      // NÚT THÊM VÀO GIỎ HÀNG.
+      // Thanh công cụ dưới cùng chứa nút "Thêm vào giỏ"
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton.icon(
+            // Tự động disable nút nếu món hết hàng (truyền null vào onPressed)
+            onPressed: item.isAvailable
+                ? () {
+              // Gọi hàm addItem từ CartViewModel
+              context.read<CartViewModel>().addItem(item);
+
+              // Hiển thị thông báo (SnackBar)
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã thêm ${item.name} vào giỏ'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            }
+                : null,
+            icon: const Icon(Icons.add_shopping_cart),
+            label: Text(item.isAvailable ? 'Thêm vào giỏ' : 'Hết hàng'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
       ),
     );
