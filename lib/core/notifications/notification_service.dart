@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../data/models/order.dart';
@@ -56,8 +57,25 @@ class NotificationService {
     }
   }
 
+  /// Đổi id đơn (chuỗi) thành id thông báo (số nguyên 32-bit không âm).
+  ///
+  /// Plugin thông báo chỉ nhận id kiểu số. Cùng một đơn luôn ra cùng một số,
+  /// nên thông báo mới của đơn đó thay thế thông báo cũ thay vì chồng lên nhau.
+  /// Không dùng `String.hashCode` vì Dart không đảm bảo nó giống nhau giữa các lần chạy.
+  @visibleForTesting
+  static int notificationIdFor(String orderId) {
+    var hash = 7;
+    for (final unit in orderId.codeUnits) {
+      hash = (hash * 31 + unit) & 0x7fffffff;
+    }
+    return hash;
+  }
+
   /// Gửi thông báo khi trạng thái 1 đơn hàng thay đổi.
   Future<void> showOrderStatusNotification(Order order) async {
+    final orderId = order.id;
+    if (orderId == null) return; // đơn chưa được lưu thì không có gì để báo
+
     const androidDetails = AndroidNotificationDetails(
       'order_status_channel',
       'Trạng thái đơn hàng',
@@ -68,7 +86,9 @@ class NotificationService {
     const details = NotificationDetails(android: androidDetails);
 
     await _plugin.show(
-      order.id!, // dùng orderId làm notification id — mỗi đơn 1 thông báo riêng, đơn sau đè đơn trước nếu cùng id
+      notificationIdFor(
+        orderId,
+      ), // mỗi đơn 1 thông báo riêng, đổi trạng thái thì thay thông báo cũ
       buildTitle(order),
       buildBody(order),
       details,

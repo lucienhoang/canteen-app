@@ -6,9 +6,10 @@ import 'order_status.dart';
 /// Gồm danh sách [OrderItem] (các món đã đặt), trạng thái đơn([OrderStatus]),
 /// và thông tin lấy hàng (giờ hẹn, ghi chú).
 class Order {
-  /// Mã định danh duy nhất của đơn hàng.
+  /// Mã định danh duy nhất của đơn hàng, dạng chuỗi
+  /// (khớp với id document của Firestore ở các nhánh sau).
   /// [null] khi chưa được lưu vào cơ sở dữ liệu.
-  final int? id;
+  final String? id;
 
   /// Mã người dùng đặt đơn
   final String userId;
@@ -47,7 +48,7 @@ class Order {
   /// Dùng khi cần đỏi trạng thái đơn (VD: pending -> preparing) mà
   /// không sửa trực tiếp object đang được UI theo dõi.
   Order copyWith({
-    int? id,
+    String? id,
     String? userId,
     List<OrderItem>? items,
     OrderStatus? status,
@@ -82,7 +83,8 @@ class Order {
   // khác nhau — Repository sẽ query cả 2 bảng rồi ráp lại bằng hàm này.
   factory Order.fromMap(Map<String, dynamic> map, List<OrderItem> items) {
     return Order(
-      id: map['id'] as int?,
+      // SQLite trả id dạng số nguyên; đổi sang chuỗi để thống nhất kiểu id.
+      id: map['id']?.toString(),
       userId: map['user_id'] as String,
       items: items,
       status: OrderStatus.values.byName(map['status'] as String),

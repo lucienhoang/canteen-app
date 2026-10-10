@@ -26,7 +26,7 @@ class OrderTrackingScreen extends StatelessWidget {
     required this.orderRepository,
   });
 
-  final int orderId;
+  final String orderId;
   final OrderRepository orderRepository;
 
   @override

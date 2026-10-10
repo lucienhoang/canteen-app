@@ -41,8 +41,8 @@ void main() {
     );
 
     // Kiểm tra ID được sinh tự động tăng dần
-    expect(order1.id, 1);
-    expect(order2.id, 2);
+    expect(order1.id, '1');
+    expect(order2.id, '2');
   });
 
   test('getOrdersByUser chỉ trả đơn của đúng user, mới nhất trước', () async {
@@ -100,7 +100,7 @@ void main() {
     );
 
     final found = await repository.getOrderById(created.id!);
-    final notFound = await repository.getOrderById(999);
+    final notFound = await repository.getOrderById('999');
 
     // Tìm thấy đúng order đã tạo
     expect(found?.id, created.id);
@@ -128,7 +128,7 @@ void main() {
   test('updateOrderStatus ném lỗi khi id không tồn tại', () async {
     // Đảm bảo bắn ra StateError khi id = 999 không có trong danh sách
     expect(
-      () => repository.updateOrderStatus(999, OrderStatus.preparing),
+      () => repository.updateOrderStatus('999', OrderStatus.preparing),
       throwsStateError,
     );
   });

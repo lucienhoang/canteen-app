@@ -15,7 +15,7 @@ void main() {
   ];
 
   Order buildOrder(OrderStatus status) => Order(
-    id: 1,
+    id: '1',
     userId: 'u1',
     items: sampleItems,
     status: status,

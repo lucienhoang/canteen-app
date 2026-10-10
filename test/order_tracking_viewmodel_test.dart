@@ -41,7 +41,7 @@ void main() {
   });
 
   test('loadOrder với id không tồn tại thì báo lỗi', () async {
-    await viewModel.loadOrder(999);
+    await viewModel.loadOrder('999');
 
     expect(viewModel.order, null);
     expect(viewModel.errorMessage, isNotNull);
