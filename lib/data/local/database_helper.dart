@@ -25,12 +25,26 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'canteen_app.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3, // trước là 2
       onCreate: (db, version) => _createTables(db),
       onUpgrade: (db, oldVersion, newVersion) async {
-        await db.execute('DROP TABLE IF EXISTS order_items');
-        await db.execute('DROP TABLE IF EXISTS orders');
-        await _createTables(db);
+        if (oldVersion < 2) {
+          // v1 -> v2: user_id đổi kiểu. Dữ liệu lúc đó chỉ là đơn thử nên xóa và tạo lại.
+          // _createTables đã tạo bảng theo cấu trúc mới nhất nên không cần chạy tiếp bước v3.
+          await db.execute('DROP TABLE IF EXISTS order_items');
+          await db.execute('DROP TABLE IF EXISTS orders');
+          await _createTables(db);
+          return;
+        }
+        if (oldVersion < 3) {
+          // v2 -> v3: thêm tên và MSSV người đặt, GIỮ NGUYÊN các đơn cũ.
+          await db.execute(
+            "ALTER TABLE orders ADD COLUMN user_name TEXT NOT NULL DEFAULT ''",
+          );
+          await db.execute(
+            "ALTER TABLE orders ADD COLUMN user_mssv TEXT NOT NULL DEFAULT ''",
+          );
+        }
       },
     );
   }
@@ -42,6 +56,8 @@ class DatabaseHelper {
       CREATE TABLE orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id TEXT NOT NULL,
+        user_name TEXT NOT NULL DEFAULT '',
+        user_mssv TEXT NOT NULL DEFAULT '',
         status TEXT NOT NULL,
         pickup_time TEXT NOT NULL,
         note TEXT,
@@ -71,7 +87,7 @@ class DatabaseHelper {
     await _db?.close();
     _db = await openDatabase(
       inMemoryDatabasePath,
-      version: 1,
+      version: 3,
       onCreate: (db, version) => _createTables(db),
     );
   }

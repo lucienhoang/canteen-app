@@ -14,6 +14,14 @@ class Order {
   /// Mã người dùng đặt đơn
   final String userId;
 
+  /// Bản sao tên người đặt tại thời điểm đặt đơn.
+  /// Cùng tinh thần với "giá tại thời điểm đặt": nhân viên đọc đơn
+  /// không cần truy vấn thêm bảng người dùng.
+  final String userName;
+
+  /// Bản sao mã số sinh viên của người đặt tại thời điểm đặt đơn.
+  final String userMssv;
+
   /// Danh sách các món trong đơn hàng.
   final List<OrderItem> items;
 
@@ -34,6 +42,8 @@ class Order {
   const Order({
     this.id,
     required this.userId,
+    this.userName = '',
+    this.userMssv = '',
     required this.items,
     this.status = OrderStatus.pending,
     required this.pickupTime,
@@ -50,6 +60,8 @@ class Order {
   Order copyWith({
     String? id,
     String? userId,
+    String? userName,
+    String? userMssv,
     List<OrderItem>? items,
     OrderStatus? status,
     DateTime? pickupTime,
@@ -59,6 +71,8 @@ class Order {
     return Order(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userMssv: userMssv ?? this.userMssv,
       items: items ?? this.items,
       status: status ?? this.status,
       pickupTime: pickupTime ?? this.pickupTime,
@@ -72,6 +86,8 @@ class Order {
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
+      'user_name': userName,
+      'user_mssv': userMssv,
       'status': status.name,
       'pickup_time': pickupTime.toIso8601String(),
       'note': note,
@@ -86,6 +102,9 @@ class Order {
       // SQLite trả id dạng số nguyên; đổi sang chuỗi để thống nhất kiểu id.
       id: map['id']?.toString(),
       userId: map['user_id'] as String,
+      // Đơn cũ (tạo trước khi có hai cột này) sẽ có tên/MSSV rỗng.
+      userName: map['user_name'] as String? ?? '',
+      userMssv: map['user_mssv'] as String? ?? '',
       items: items,
       status: OrderStatus.values.byName(map['status'] as String),
       pickupTime: DateTime.parse(map['pickup_time'] as String),
