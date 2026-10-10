@@ -16,10 +16,10 @@ abstract class OrderRepository {
   Future<List<Order>> getOrdersByUser(String userId);
 
   /// Lấy 1 đơn hàng theo id, trả về null nếu không tìm thấy.
-  Future<Order?> getOrderById(int id);
+  Future<Order?> getOrderById(String id);
 
   /// Cập nhật trạng thái của 1 đơn hàng đã tồn tại.
-  Future<void> updateOrderStatus(int orderId, OrderStatus newStatus);
+  Future<void> updateOrderStatus(String orderId, OrderStatus newStatus);
 
   /// Lấy toàn bộ đơn hàng trong hệ thống, mới nhất trước (dùng cho màn hình nhân viên).
   Future<List<Order>> getAllOrders();
@@ -36,8 +36,8 @@ class MockOrderRepository implements OrderRepository {
     // Giả lập độ trễ mạng/database 800ms
     await Future.delayed(const Duration(milliseconds: 800));
 
-    // Giả lập cơ chế Auto Increment ID của Database
-    final saved = order.copyWith(id: _nextId++);
+    // Giả lập cơ chế Auto Increment ID của Database (id dạng chuỗi)
+    final saved = order.copyWith(id: '${_nextId++}');
     _orders.add(saved);
     return saved;
   }
@@ -55,7 +55,7 @@ class MockOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<Order?> getOrderById(int id) async {
+  Future<Order?> getOrderById(String id) async {
     await Future.delayed(const Duration(milliseconds: 800));
     try {
       return _orders.firstWhere((o) => o.id == id);
@@ -65,7 +65,7 @@ class MockOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<void> updateOrderStatus(int orderId, OrderStatus newStatus) async {
+  Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final index = _orders.indexWhere((o) => o.id == orderId);
@@ -87,6 +87,9 @@ class MockOrderRepository implements OrderRepository {
 }
 
 /// Triển khai [OrderRepository] sử dụng cơ sở dữ liệu SQLite dưới máy.
+///
+/// Bảng `orders` vẫn dùng khóa số tự tăng. Ra ngoài repository thì id luôn là
+/// chuỗi ([Order.id]); trong repository đổi qua lại bằng `toString()` / `int.tryParse`.
 class SqliteOrderRepository implements OrderRepository {
   /// Khởi tạo repository với [DatabaseHelper].
   /// Mặc định dùng [DatabaseHelper.instance] nếu không truyền vào.
@@ -120,8 +123,8 @@ class SqliteOrderRepository implements OrderRepository {
           'quantity': item.quantity,
         });
       }
-      // 3. Trả về đối tượng Order mới đã được gắn ID tự tăng từ SQLite
-      return order.copyWith(id: orderId);
+      // 3. Trả về đối tượng Order mới đã được gắn ID tự tăng từ SQLite (dạng chuỗi)
+      return order.copyWith(id: orderId.toString());
     });
   }
 
@@ -144,35 +147,44 @@ class SqliteOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<Order?> getOrderById(int id) async {
+  Future<Order?> getOrderById(String id) async {
+    // Id không phải số thì chắc chắn không có trong bảng
+    final rowId = int.tryParse(id);
+    if (rowId == null) return null;
+
     final db = await _dbHelper.database;
     final orderMaps = await db.query(
       'orders',
       where: 'id = ?',
-      whereArgs: [id],
+      whereArgs: [rowId],
     );
 
     if (orderMaps.isEmpty) return null;
 
-    final items = await _getItemsForOrder(db, id);
+    final items = await _getItemsForOrder(db, rowId);
     return Order.fromMap(orderMaps.first, items);
   }
 
   @override
-  Future<void> updateOrderStatus(int orderId, OrderStatus newStatus) async {
+  Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) async {
+    final rowId = int.tryParse(orderId);
+    if (rowId == null) {
+      throw StateError('Không tìm thấy đơn hàng có id $orderId');
+    }
+
     final db = await _dbHelper.database;
     final count = await db.update(
       'orders',
       {'status': newStatus.name},
       where: 'id = ?',
-      whereArgs: [orderId],
+      whereArgs: [rowId],
     );
     if (count == 0) {
       throw StateError('Không tìm thấy đơn hàng có id $orderId');
     }
   }
 
-  /// Hàm phụ trợ lấy danh sách OrderItem theo orderId
+  /// Hàm phụ trợ lấy danh sách OrderItem theo orderId (khóa số của SQLite)
   Future<List<OrderItem>> _getItemsForOrder(Database db, int orderId) async {
     final itemMaps = await db.query(
       'order_items',

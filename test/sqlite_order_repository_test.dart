@@ -110,8 +110,25 @@ void main() {
 
   test('updateOrderStatus ném lỗi khi id không tồn tại', () async {
     expect(
-      () => repository.updateOrderStatus(999, OrderStatus.preparing),
+      () => repository.updateOrderStatus('999', OrderStatus.preparing),
       throwsStateError,
     );
+  });
+
+  test('getOrderById với id không phải số trả về null', () async {
+    expect(await repository.getOrderById('abc'), isNull);
+  });
+
+  test('createOrder trả id chuỗi và getOrderById tìm lại được', () async {
+    final saved = await repository.createOrder(
+      Order(
+        userId: 'u1',
+        items: sampleItems,
+        pickupTime: DateTime(2026, 10, 1, 11, 30),
+        createdAt: DateTime(2026, 9, 24, 9, 0),
+      ),
+    );
+    expect(saved.id, isA<String>());
+    expect((await repository.getOrderById(saved.id!))?.id, saved.id);
   });
 }

@@ -8,7 +8,7 @@ import 'package:canteen_app/data/repositories/order_repository.dart';
 import 'package:canteen_app/features/orders/order_tracking_screen.dart';
 
 void main() {
-  Future<int> createOrderWithStatus(
+  Future<String> createOrderWithStatus(
     MockOrderRepository repo,
     OrderStatus status,
   ) async {
@@ -35,7 +35,7 @@ void main() {
 
   testWidgets('hiện đúng label các bước và đơn #id', (tester) async {
     final repo = MockOrderRepository();
-    late int orderId;
+    late String orderId;
 
     // Dùng runAsync để thoát khỏi "đồng hồ giả" của testWidgets khi gọi
     // Repository có Future.delayed thật — tránh treo vô hạn.
@@ -61,7 +61,7 @@ void main() {
     tester,
   ) async {
     final repo = MockOrderRepository();
-    late int orderId;
+    late String orderId;
 
     await tester.runAsync(() async {
       orderId = await createOrderWithStatus(repo, OrderStatus.cancelled);
@@ -83,7 +83,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: OrderTrackingScreen(orderId: 999, orderRepository: repo),
+        home: OrderTrackingScreen(orderId: '999', orderRepository: repo),
       ),
     );
     await tester.pump(const Duration(milliseconds: 900));

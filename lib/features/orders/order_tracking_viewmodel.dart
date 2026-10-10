@@ -25,7 +25,7 @@ class OrderTrackingViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   /// Tải thông tin chi tiết của đơn hàng theo [orderId] từ cơ sở dữ liệu
-  Future<void> loadOrder(int orderId) async {
+  Future<void> loadOrder(String orderId) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
