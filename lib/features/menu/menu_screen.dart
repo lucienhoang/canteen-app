@@ -6,7 +6,7 @@ import 'menu_item_detail_screen.dart';
 import 'menu_viewmodel.dart';
 import '../cart/cart_screen.dart';
 import '../cart/cart_viewmodel.dart';
-
+import '../auth/logout_button.dart';
 
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
@@ -20,7 +20,7 @@ class MenuScreen extends StatelessWidget {
     final vm = context.watch<MenuViewmodel>();
 
     return Scaffold(
-//Thêm actions vào AppBar chứa Icon Giỏ hàng kèm Badge
+      //Thêm actions vào AppBar chứa Icon Giỏ hàng kèm Badge
       appBar: AppBar(
         title: const Text("Menu căn tin"),
         actions: [
@@ -38,13 +38,16 @@ class MenuScreen extends StatelessWidget {
                     // Điều hướng sang màn hình giỏ hàng
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CartScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const CartScreen(),
+                      ),
                     );
                   },
                 ),
               );
             },
           ),
+          const LogoutButton(),
           const SizedBox(width: 8),
         ],
       ),
@@ -130,24 +133,27 @@ class MenuScreen extends StatelessWidget {
                 // Nếu còn hàng thì hiện Icon Thêm vào giỏ, nếu hết hàng thì hiện chữ "Hết hàng" màu đỏ
                 trailing: item.isAvailable
                     ? IconButton(
-                  icon: const Icon(Icons.add_shopping_cart, color: Colors.green),
-                  onPressed: () {
-                    // Gọi ViewModel để thêm món vào giỏ
-                    context.read<CartViewModel>().addItem(item);
+                        icon: const Icon(
+                          Icons.add_shopping_cart,
+                          color: Colors.green,
+                        ),
+                        onPressed: () {
+                          // Gọi ViewModel để thêm món vào giỏ
+                          context.read<CartViewModel>().addItem(item);
 
-                    // Hiện thông báo nhỏ cho người dùng biết
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đã thêm ${item.name} vào giỏ'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
-                  },
-                )
+                          // Hiện thông báo nhỏ cho người dùng biết
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Đã thêm ${item.name} vào giỏ'),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                      )
                     : const Text(
-                  "Hết hàng",
-                  style: TextStyle(color: Colors.red),
-                ),
+                        "Hết hàng",
+                        style: TextStyle(color: Colors.red),
+                      ),
                 // Vô hiệu hóa (làm mờ) item nếu hết hàng
                 enabled: item.isAvailable,
                 // Xử lý sự kiện chọn món: điều hướng sang màn hình chi tiết và truyền dữ liệu (item).
