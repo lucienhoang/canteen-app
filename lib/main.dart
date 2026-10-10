@@ -7,7 +7,6 @@ import 'firebase_options.dart';
 
 import 'core/notifications/notification_service.dart';
 
-import 'data/repositories/auth_repository.dart';
 import 'data/repositories/menu_repository.dart';
 import 'data/repositories/order_repository.dart';
 
@@ -17,6 +16,7 @@ import 'features/cart/cart_viewmodel.dart';
 import 'features/menu/menu_screen.dart';
 import 'features/menu/menu_viewmodel.dart';
 import 'features/staff/staff_screen.dart';
+import 'data/repositories/firebase_auth_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,8 +38,7 @@ class CanteenApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) =>
-              AuthViewModel(MockAuthRepository())
-                ..restoreSession(),
+              AuthViewModel(FirebaseAuthRepository())..restoreSession(),
         ),
         ChangeNotifierProvider(
           create: (_) => MenuViewmodel(MockMenuRepository())..load(),
