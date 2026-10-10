@@ -16,12 +16,14 @@ void main() {
     // MockAuthRepository không có Future.delayed nên await trực tiếp được,
     // không cần tester.runAsync.
     final auth = AuthViewModel(MockAuthRepository());
+    final repo = MockOrderRepository();
+
     if (signedIn) {
       await auth.signIn('2110001', '123456');
     }
 
     // CartScreen không còn tự nạp món demo, nên test tự thêm món vào giỏ trước.
-    final cart = CartViewModel(orderRepository: MockOrderRepository())
+    final cart = CartViewModel(orderRepository: repo)
       ..addItem(
         const MenuItem(id: 1, categoryId: 1, name: 'Cơm Sườn', price: 35000),
       )
@@ -34,7 +36,7 @@ void main() {
         ChangeNotifierProvider<AuthViewModel>.value(value: auth),
         ChangeNotifierProvider<CartViewModel>.value(value: cart),
       ],
-      child: const MaterialApp(home: CartScreen()),
+      child: MaterialApp(home: CartScreen(orderRepository: repo)),
     );
   }
 

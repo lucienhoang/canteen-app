@@ -18,7 +18,7 @@ class StaffScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) =>
-          StaffViewModel(orderRepository: orderRepository)..loadOrders(),
+          StaffViewModel(orderRepository: orderRepository)..startWatching(),
       child: const _StaffBody(),
     );
   }
@@ -101,6 +101,14 @@ class _OrderCard extends StatelessWidget {
                 Chip(label: Text(order.status.label)),
               ],
             ),
+            if (order.userName.isNotEmpty || order.userMssv.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  '${order.userName} · ${order.userMssv}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
             const SizedBox(height: 8),
             ...order.items.map(
               (item) => Text("${item.menuItemName} x ${item.quantity}"),

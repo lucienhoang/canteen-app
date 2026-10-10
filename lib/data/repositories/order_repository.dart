@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:canteen_app/data/local/database_helper.dart';
 import 'package:sqflite/sqlite_api.dart';
 
@@ -23,6 +25,46 @@ abstract class OrderRepository {
 
   /// Lấy toàn bộ đơn hàng trong hệ thống, mới nhất trước (dùng cho màn hình nhân viên).
   Future<List<Order>> getAllOrders();
+
+  /// Theo dõi toàn bộ đơn hàng: phát danh sách hiện tại ngay khi bắt đầu nghe,
+  /// rồi phát lại danh sách mới mỗi khi có đơn được tạo hoặc đổi trạng thái.
+  Stream<List<Order>> watchAllOrders();
+
+  /// Theo dõi 1 đơn hàng: phát đơn hiện tại ngay khi bắt đầu nghe,
+  /// rồi phát lại mỗi khi nó thay đổi. Phát null nếu không tìm thấy đơn.
+  Stream<Order?> watchOrder(String id);
+}
+
+/// Dựng một stream "phát lại kết quả [query] mỗi khi [changes] có tín hiệu".
+///
+/// - Đăng ký nghe [changes] TRƯỚC rồi mới chạy query đầu tiên, để không bỏ sót
+///   thay đổi xảy ra giữa chừng.
+/// - Hủy nghe thì ngừng đăng ký [changes], không để rò rỉ.
+/// - Query lỗi thì phát lỗi vào stream (không làm sập app), lần thay đổi sau vẫn thử lại.
+Stream<T> _watchChanges<T>({
+  required Stream<void> changes,
+  required Future<T> Function() query,
+}) {
+  late final StreamController<T> controller;
+  StreamSubscription<void>? subscription;
+
+  Future<void> emit() async {
+    try {
+      final value = await query();
+      if (controller.hasListener) controller.add(value);
+    } catch (e, st) {
+      if (controller.hasListener) controller.addError(e, st);
+    }
+  }
+
+  controller = StreamController<T>(
+    onListen: () {
+      subscription = changes.listen((_) => emit());
+      emit();
+    },
+    onCancel: () => subscription?.cancel(),
+  );
+  return controller.stream;
 }
 
 /// Dữ liệu giả lập cho Đơn hàng, lưu tạm trong bộ nhớ RAM (List).
@@ -30,6 +72,22 @@ abstract class OrderRepository {
 class MockOrderRepository implements OrderRepository {
   final List<Order> _orders = [];
   int _nextId = 1;
+
+  /// Phát tín hiệu mỗi khi dữ liệu đơn hàng thay đổi.
+  final StreamController<void> _changes = StreamController<void>.broadcast();
+
+  List<Order> _sortedSnapshot() {
+    final result = List<Order>.of(_orders);
+    result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return result;
+  }
+
+  Order? _findById(String id) {
+    for (final order in _orders) {
+      if (order.id == id) return order;
+    }
+    return null;
+  }
 
   @override
   Future<Order> createOrder(Order order) async {
@@ -39,6 +97,7 @@ class MockOrderRepository implements OrderRepository {
     // Giả lập cơ chế Auto Increment ID của Database (id dạng chuỗi)
     final saved = order.copyWith(id: '${_nextId++}');
     _orders.add(saved);
+    _changes.add(null);
     return saved;
   }
 
@@ -57,11 +116,7 @@ class MockOrderRepository implements OrderRepository {
   @override
   Future<Order?> getOrderById(String id) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    try {
-      return _orders.firstWhere((o) => o.id == id);
-    } catch (_) {
-      return null; // Không tìm thấy đơn hàng
-    }
+    return _findById(id); // null nếu không tìm thấy đơn hàng
   }
 
   @override
@@ -75,15 +130,25 @@ class MockOrderRepository implements OrderRepository {
 
     // Thay thế object cũ bằng object mới đã được cập nhật trạng thái
     _orders[index] = _orders[index].copyWith(status: newStatus);
+    _changes.add(null);
   }
 
   @override
   Future<List<Order>> getAllOrders() async {
     await Future.delayed(const Duration(milliseconds: 800));
-    final result = List<Order>.of(_orders);
-    result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return result;
+    return _sortedSnapshot();
   }
+
+  // Các hàm watch đọc thẳng từ RAM, không giả lập độ trễ.
+  @override
+  Stream<List<Order>> watchAllOrders() => _watchChanges(
+    changes: _changes.stream,
+    query: () async => _sortedSnapshot(),
+  );
+
+  @override
+  Stream<Order?> watchOrder(String id) =>
+      _watchChanges(changes: _changes.stream, query: () async => _findById(id));
 }
 
 /// Triển khai [OrderRepository] sử dụng cơ sở dữ liệu SQLite dưới máy.
@@ -98,15 +163,24 @@ class SqliteOrderRepository implements OrderRepository {
 
   final DatabaseHelper _dbHelper;
 
+  /// Tín hiệu "dữ liệu đơn hàng vừa thay đổi", dùng CHUNG cho mọi đối tượng
+  /// [SqliteOrderRepository] (static). Cần vậy vì app tạo nhiều đối tượng
+  /// repository (giỏ hàng, màn nhân viên, màn theo dõi...) cùng ghi vào một
+  /// database: ghi qua đối tượng này thì người nghe ở đối tượng kia cũng phải biết.
+  static final StreamController<void> _changes =
+      StreamController<void>.broadcast();
+
   @override
   Future<Order> createOrder(Order order) async {
     final db = await _dbHelper.database;
 
     // Sử dụng Transaction để đảm bảo tính toàn vẹn dữ liệu giữa bảng orders và order_items
-    return db.transaction<Order>((txn) async {
+    final saved = await db.transaction<Order>((txn) async {
       // 1. Thêm thông tin chung của đơn hàng vào bảng orders
       final orderId = await txn.insert('orders', {
         'user_id': order.userId,
+        'user_name': order.userName,
+        'user_mssv': order.userMssv,
         'status': order.status.name,
         'pickup_time': order.pickupTime.toIso8601String(),
         'note': order.note,
@@ -126,6 +200,10 @@ class SqliteOrderRepository implements OrderRepository {
       // 3. Trả về đối tượng Order mới đã được gắn ID tự tăng từ SQLite (dạng chuỗi)
       return order.copyWith(id: orderId.toString());
     });
+
+    // Báo cho người đang theo dõi SAU khi transaction đã ghi xong
+    _changes.add(null);
+    return saved;
   }
 
   @override
@@ -182,6 +260,8 @@ class SqliteOrderRepository implements OrderRepository {
     if (count == 0) {
       throw StateError('Không tìm thấy đơn hàng có id $orderId');
     }
+
+    _changes.add(null);
   }
 
   /// Hàm phụ trợ lấy danh sách OrderItem theo orderId (khóa số của SQLite)
@@ -206,4 +286,12 @@ class SqliteOrderRepository implements OrderRepository {
     }
     return orders;
   }
+
+  @override
+  Stream<List<Order>> watchAllOrders() =>
+      _watchChanges(changes: _changes.stream, query: getAllOrders);
+
+  @override
+  Stream<Order?> watchOrder(String id) =>
+      _watchChanges(changes: _changes.stream, query: () => getOrderById(id));
 }

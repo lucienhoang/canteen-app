@@ -34,7 +34,7 @@ class OrderTrackingScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) =>
           OrderTrackingViewModel(orderRepository: orderRepository)
-            ..loadOrder(orderId),
+            ..watchOrder(orderId),
       child: const _OrderTrackingBody(),
     );
   }

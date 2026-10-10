@@ -10,14 +10,17 @@ import '../auth/auth_viewmodel.dart';
 /// Màn hình Giỏ hàng - hiển thị danh sách các món đang chọn,
 /// cho phép điều chỉnh số lượng, xóa món và thực hiện đặt đơn (Checkout).
 class CartScreen extends StatefulWidget {
-  const CartScreen({super.key});
+  const CartScreen({super.key, this.orderRepository});
+
+  /// Repository dùng cho màn theo dõi đơn sau khi đặt.
+  /// Để trống thì dùng SQLite thật; test truyền Mock vào.
+  final OrderRepository? orderRepository;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-
   // Định dạng hiển thị tiền tệ Việt Nam VNĐ
   final _priceFormat = NumberFormat.decimalPattern('vi');
   String _formatPrice(int price) => '${_priceFormat.format(price)}đ';
@@ -29,7 +32,9 @@ class _CartScreenState extends State<CartScreen> {
     if (user == null) return; // chưa đăng nhập thì không đặt đơn
 
     final order = await cart.checkout(
-      userId: user.id, // TODO: Thay thế bằng ID của User đang đăng nhập
+      userId: user.id,
+      userName: user.name,
+      userMssv: user.mssv,
       pickupTime: DateTime.now().add(const Duration(minutes: 30)),
     );
 
@@ -46,7 +51,7 @@ class _CartScreenState extends State<CartScreen> {
         MaterialPageRoute(
           builder: (_) => OrderTrackingScreen(
             orderId: order.id!,
-            orderRepository: SqliteOrderRepository(),
+            orderRepository: widget.orderRepository ?? SqliteOrderRepository(),
           ),
         ),
       );

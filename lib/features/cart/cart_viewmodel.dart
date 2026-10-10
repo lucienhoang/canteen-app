@@ -91,6 +91,8 @@ class CartViewModel extends ChangeNotifier {
   /// Trả về [Order] đã tạo thành công, hoặc [null] nếu xảy ra lỗi.
   Future<Order?> checkout({
     required String userId,
+    String userName = '',
+    String userMssv = '',
     required DateTime pickupTime,
     String? note,
   }) async {
@@ -110,6 +112,8 @@ class CartViewModel extends ChangeNotifier {
       final order = await _orderRepository.createOrder(
         Order(
           userId: userId,
+          userName: userName,
+          userMssv: userMssv,
           items: List.of(_items),
           pickupTime: pickupTime,
           note: note,
