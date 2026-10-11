@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/order.dart';
 import '../../data/repositories/order_repository.dart';
 
+import '../../data/repositories/order_repository_exception.dart';
+
 /// ViewModel quản lý trạng thái màn hình Theo dõi chi tiết 1 Đơn hàng cụ thể.
 /// Theo dõi đơn theo thời gian thực: nhân viên đổi trạng thái thì màn hình tự cập nhật.
 class OrderTrackingViewModel extends ChangeNotifier {
@@ -52,7 +54,9 @@ class OrderTrackingViewModel extends ChangeNotifier {
           onError: (Object e, StackTrace st) {
             debugPrint('Theo dõi đơn lỗi: $e\n$st');
             _isLoading = false;
-            _errorMessage = "Không tải được thông tin đơn, thử lại nhé";
+            _errorMessage = e is OrderRepositoryException
+                ? e.message
+                : "Không tải được thông tin đơn, thử lại nhé";
             notifyListeners();
           },
         );

@@ -29,6 +29,10 @@ class _CartScreenState extends State<CartScreen> {
   Future<void> _handleCheckout(CartViewModel cart) async {
     // Lấy user TRƯỚC khi await, để không dùng context sau khi await
     final user = context.read<AuthViewModel>().currentUser;
+
+    final orderRepository =
+        widget.orderRepository ?? context.read<OrderRepository>();
+
     if (user == null) return; // chưa đăng nhập thì không đặt đơn
 
     final order = await cart.checkout(
@@ -46,12 +50,12 @@ class _CartScreenState extends State<CartScreen> {
         SnackBar(content: Text("Đặt đơn thành công! Mã đơn ${order.id}")),
       );
 
-      // Chuyển qua man fhinfh theo dõi trạng thái đơn khi đã đặt thành công
+      // Chuyển qua màn hình theo dõi trạng thái đơn khi đã đặt thành công
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => OrderTrackingScreen(
             orderId: order.id!,
-            orderRepository: widget.orderRepository ?? SqliteOrderRepository(),
+            orderRepository: orderRepository,
           ),
         ),
       );

@@ -37,30 +37,59 @@ class _StaffBody extends StatelessWidget {
         title: const Text("Đơn hàng - Nhân viên"),
         actions: const [LogoutButton()],
       ),
-      body: Builder(
-        builder: (context) {
-          if (vm.isLoading && vm.activeOrders.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (vm.activeOrders.isEmpty) {
-            return const Center(child: Text("Khong có đơn nào cần xử lý"));
-          }
+      body: Column(
+        children: [
+          // Dải báo lỗi (mất mạng, thiếu quyền...) hiện phía trên danh sách
+          if (vm.errorMessage != null) _ErrorBanner(message: vm.errorMessage!),
+          Expanded(
+            child: Builder(
+              builder: (context) {
+                if (vm.isLoading && vm.activeOrders.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (vm.activeOrders.isEmpty) {
+                  return const Center(
+                    child: Text("Không có đơn nào cần xử lý"),
+                  );
+                }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: vm.activeOrders.length,
-            itemBuilder: (context, index) {
-              final order = vm.activeOrders[index];
-              return _OrderCard(
-                order: order,
-                priceFormat: priceFormat,
-                onChangeStatus: (status) =>
-                    context.read<StaffViewModel>().changeStatus(order, status),
-              );
-            },
-          );
-        },
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: vm.activeOrders.length,
+                  itemBuilder: (context, index) {
+                    final order = vm.activeOrders[index];
+                    return _OrderCard(
+                      order: order,
+                      priceFormat: priceFormat,
+                      onChangeStatus: (status) => context
+                          .read<StaffViewModel>()
+                          .changeStatus(order, status),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// Dải thông báo lỗi màu đỏ nhạt ở đầu màn hình.
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      color: colors.errorContainer,
+      padding: const EdgeInsets.all(12),
+      child: Text(message, style: TextStyle(color: colors.onErrorContainer)),
     );
   }
 }

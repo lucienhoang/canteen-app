@@ -5,6 +5,8 @@ import '../../data/models/order.dart';
 import '../../data/models/order_item.dart';
 import '../../data/repositories/order_repository.dart';
 
+import '../../data/repositories/order_repository_exception.dart';
+
 /// Quản lý trạng thái giỏ hàng tạm thời (trên RAM) và xử lý luồng đặt đơn (Checkout).
 ///
 /// Giỏ hàng lưu danh sách [OrderItem] thay vì [MenuItem] để chốt giá ([priceAtOrder])
@@ -124,7 +126,11 @@ class CartViewModel extends ChangeNotifier {
       // 3. Đặt đơn thành công -> Xóa sạch giỏ hàng
       clear();
       return order;
-    } catch (e) {
+    } on OrderRepositoryException catch (e) {
+      _errorMessage = e.message;
+      return null;
+    } catch (e, st) {
+      debugPrint('Checkout lỗi: $e\n$st');
       _errorMessage = "Đặt đơn thất bại, xin hãy thử lại sau!";
       return null;
     } finally {
