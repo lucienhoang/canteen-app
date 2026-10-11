@@ -8,6 +8,8 @@ import '../../data/models/order.dart';
 import '../../data/models/order_status.dart';
 import '../../data/repositories/order_repository.dart';
 
+import '../../data/repositories/order_repository_exception.dart';
+
 /// Quản lý danh sách đơn hàng cho màn hình nhân viên căn tin.
 /// Nhân viên xem tất cả các đơn (không lọc theo user) và cập nhật trạng thái đơn.
 class StaffViewModel extends ChangeNotifier {
@@ -65,7 +67,9 @@ class StaffViewModel extends ChangeNotifier {
       onError: (Object e, StackTrace st) {
         debugPrint('Theo dõi đơn hàng lỗi: $e\n$st');
         _isLoading = false;
-        _errorMessage = "Không tải được danh sách đơn, thử lại nhé";
+        _errorMessage = e is OrderRepositoryException
+            ? e.message
+            : "Không tải được danh sách đơn, thử lại nhé";
         notifyListeners();
       },
     );
@@ -93,9 +97,14 @@ class StaffViewModel extends ChangeNotifier {
   /// lỗi thì không được làm hỏng luồng chính.
   Future<void> changeStatus(Order order, OrderStatus newStatus) async {
     if (!order.status.canChangeTo(newStatus)) return;
+    _errorMessage = null;
 
     try {
       await _orderRepository.updateOrderStatus(order.id!, newStatus);
+    } on OrderRepositoryException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return;
     } catch (e) {
       _errorMessage = "Cập nhật trạng thái thất bại, thử lại nhé";
       notifyListeners();
