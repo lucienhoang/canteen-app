@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../core/notifications/notification_service.dart';
-
 import '../../data/models/order.dart';
 import '../../data/models/order_status.dart';
 import '../../data/repositories/order_repository.dart';
@@ -13,18 +11,19 @@ import '../../data/repositories/order_repository_exception.dart';
 /// Quản lý danh sách đơn hàng cho màn hình nhân viên căn tin.
 /// Nhân viên xem tất cả các đơn (không lọc theo user) và cập nhật trạng thái đơn.
 class StaffViewModel extends ChangeNotifier {
-  /// [onStatusChanged] được gọi sau khi đổi trạng thái thành công.
+  /// [_onStatusChanged] được gọi sau khi đổi trạng thái thành công.
   /// Mặc định gửi thông báo thật; khi test có thể truyền hàm giả vào để
   /// không phụ thuộc plugin Android.
   StaffViewModel({
     required this._orderRepository,
     Future<void> Function(Order order)? onStatusChanged,
-  }) : _onStatusChanged =
-           onStatusChanged ??
-           NotificationService.instance.showOrderStatusNotification;
+  }) : _onStatusChanged = onStatusChanged;
 
   final OrderRepository _orderRepository;
-  final Future<void> Function(Order order) _onStatusChanged;
+
+  /// Hàm tùy chọn gọi sau khi đổi trạng thái thành công (mặc định không làm gì).
+  /// Thông báo cho sinh viên do máy sinh viên tự lo (xem OrderStatusWatcher).
+  final Future<void> Function(Order order)? _onStatusChanged;
 
   List<Order> _orders = [];
   bool _isLoading = false;
@@ -117,10 +116,14 @@ class StaffViewModel extends ChangeNotifier {
       await loadOrders();
     }
 
-    try {
-      await _onStatusChanged(order.copyWith(status: newStatus));
-    } catch (e) {
-      debugPrint('Gửi thông báo thất bại: $e');
+    final onStatusChanged = _onStatusChanged;
+
+    if (onStatusChanged != null) {
+      try {
+        await onStatusChanged(order.copyWith(status: newStatus));
+      } catch (e) {
+        debugPrint('Gửi thông báo thất bại: $e');
+      }
     }
   }
 
