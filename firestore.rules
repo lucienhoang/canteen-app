@@ -1,0 +1,92 @@
+rules_version = '2';
+
+// Kiểm tra: flutter run -d chrome -t tool/rules_check.dart
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------
+    // Hàm dùng chung
+    // ---------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasProfile() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Vai trò lấy từ hồ sơ users/{uid}, mà hồ sơ thì không ai ghi được từ app.
+    function isStaff() {
+      return isSignedIn() && hasProfile() && profile().role == 'staff';
+    }
+
+    // Bảng chuyển trạng thái hợp lệ, khớp với OrderStatus.canChangeTo trong app.
+    function validTransition(from, to) {
+      return (from == 'pending'   && (to == 'preparing' || to == 'cancelled'))
+          || (from == 'preparing' && (to == 'ready'     || to == 'cancelled'))
+          || (from == 'ready'     && to == 'completed');
+    }
+
+    // Đơn mới phải: đúng người đặt, đúng tên + MSSV trong hồ sơ, trạng thái pending,
+    // đúng kiểu dữ liệu, không có trường lạ.
+    function isValidNewOrder(data) {
+      return data.keys().hasOnly([
+               'userId', 'userName', 'userMssv', 'status', 'pickupTime',
+               'note', 'createdAt', 'items', 'totalAmount'
+             ])
+          && data.keys().hasAll([
+               'userId', 'userName', 'userMssv', 'status', 'pickupTime',
+               'createdAt', 'items', 'totalAmount'
+             ])
+          && data.userId == request.auth.uid
+          && data.userName == profile().name
+          && data.userMssv == profile().mssv
+          && data.status == 'pending'
+          && data.pickupTime is timestamp
+          && data.createdAt is timestamp
+          && (!('note' in data) || data.note == null || data.note is string)
+          && data.items is list
+          && data.items.size() > 0
+          && data.items.size() <= 30
+          && data.totalAmount is int
+          && data.totalAmount > 0;
+    }
+
+    // ---------------------------------------------------------------
+    // Hồ sơ người dùng: chỉ đọc hồ sơ của chính mình, không ai ghi từ app.
+    // (Tài khoản và hồ sơ được tạo thủ công trong Firebase Console.)
+    // ---------------------------------------------------------------
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // Đơn hàng
+    // - Sinh viên: tạo đơn của mình, chỉ đọc đơn của mình.
+    // - Nhân viên: đọc mọi đơn, chỉ được đổi trường `status` theo bảng chuyển hợp lệ.
+    // - Không ai được xóa đơn.
+    // ---------------------------------------------------------------
+    match /orders/{orderId} {
+      allow read: if isStaff()
+                  || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      allow create: if isSignedIn() && isValidNewOrder(request.resource.data);
+
+      allow update: if isStaff()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                    && validTransition(resource.data.status, request.resource.data.status);
+
+      allow delete: if false;
+    }
+
+    // Mọi thứ còn lại: khóa.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
