@@ -21,6 +21,8 @@ import 'features/menu/menu_screen.dart';
 import 'features/menu/menu_viewmodel.dart';
 import 'features/staff/staff_screen.dart';
 
+import 'features/orders/order_notification_host.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -63,7 +65,7 @@ class CanteenApp extends StatelessWidget {
         title: 'Căn tin',
         theme: ThemeData(colorSchemeSeed: Colors.orange, useMaterial3: true),
         home: AuthGate(
-          studentHome: const MenuScreen(),
+          studentHome: const OrderNotificationHost(child: MenuScreen()),
           staffHome: Builder(
             builder: (context) =>
                 StaffScreen(orderRepository: context.read<OrderRepository>()),

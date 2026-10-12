@@ -33,6 +33,10 @@ abstract class OrderRepository {
   /// Theo dõi 1 đơn hàng: phát đơn hiện tại ngay khi bắt đầu nghe,
   /// rồi phát lại mỗi khi nó thay đổi. Phát null nếu không tìm thấy đơn.
   Stream<Order?> watchOrder(String id);
+
+  /// Theo dõi các đơn của 1 người dùng: phát danh sách hiện tại ngay khi bắt đầu nghe,
+  /// rồi phát lại mỗi khi có đơn của người đó được tạo hoặc đổi trạng thái.
+  Stream<List<Order>> watchOrdersByUser(String userId);
 }
 
 /// Dựng một stream "phát lại kết quả [query] mỗi khi [changes] có tín hiệu".
@@ -149,6 +153,13 @@ class MockOrderRepository implements OrderRepository {
   @override
   Stream<Order?> watchOrder(String id) =>
       _watchChanges(changes: _changes.stream, query: () async => _findById(id));
+
+  @override
+  Stream<List<Order>> watchOrdersByUser(String userId) => _watchChanges(
+    changes: _changes.stream,
+    query: () async =>
+        _sortedSnapshot().where((o) => o.userId == userId).toList(),
+  );
 }
 
 /// Triển khai [OrderRepository] sử dụng cơ sở dữ liệu SQLite dưới máy.
@@ -294,4 +305,10 @@ class SqliteOrderRepository implements OrderRepository {
   @override
   Stream<Order?> watchOrder(String id) =>
       _watchChanges(changes: _changes.stream, query: () => getOrderById(id));
+
+  @override
+  Stream<List<Order>> watchOrdersByUser(String userId) => _watchChanges(
+    changes: _changes.stream,
+    query: () => getOrdersByUser(userId),
+  );
 }

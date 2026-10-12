@@ -241,6 +241,22 @@ class FirestoreOrderRepository implements OrderRepository {
         .transform(_errorMapper<Order?>());
   }
 
+  @override
+  Stream<List<Order>> watchOrdersByUser(String userId) {
+    return _orders
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+          final orders = snapshot.docs
+              .map((doc) => orderFromData(doc.id, doc.data()))
+              .toList();
+          // Sắp xếp trong app để không phải tạo composite index
+          orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return orders;
+        })
+        .transform(_errorMapper<List<Order>>());
+  }
+
   /// Biến lỗi của stream thành [OrderRepositoryException] để ViewModel hiện đúng thông báo.
   StreamTransformer<T, T> _errorMapper<T>() {
     return StreamTransformer<T, T>.fromHandlers(
