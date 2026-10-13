@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/widgets/responsive_center.dart';
 import '../../data/models/order.dart';
 import '../../data/models/order_status.dart';
 import '../../data/repositories/order_repository.dart';
@@ -24,8 +25,17 @@ class StaffScreen extends StatelessWidget {
   }
 }
 
+/// Số cột thẻ đơn theo bề rộng khả dụng: điện thoại 1, tablet 2, màn rộng 3.
+int staffColumnsFor(double width) {
+  if (width >= 900) return 3;
+  if (width >= 600) return 2;
+  return 1;
+}
+
 class _StaffBody extends StatelessWidget {
   const _StaffBody();
+
+  static const double _spacing = 12;
 
   @override
   Widget build(BuildContext context) {
@@ -37,40 +47,64 @@ class _StaffBody extends StatelessWidget {
         title: const Text("Đơn hàng - Nhân viên"),
         actions: const [LogoutButton()],
       ),
-      body: Column(
-        children: [
-          // Dải báo lỗi (mất mạng, thiếu quyền...) hiện phía trên danh sách
-          if (vm.errorMessage != null) _ErrorBanner(message: vm.errorMessage!),
-          Expanded(
-            child: Builder(
-              builder: (context) {
-                if (vm.isLoading && vm.activeOrders.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (vm.activeOrders.isEmpty) {
-                  return const Center(
-                    child: Text("Không có đơn nào cần xử lý"),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: vm.activeOrders.length,
-                  itemBuilder: (context, index) {
-                    final order = vm.activeOrders[index];
-                    return _OrderCard(
-                      order: order,
-                      priceFormat: priceFormat,
-                      onChangeStatus: (status) => context
-                          .read<StaffViewModel>()
-                          .changeStatus(order, status),
+      body: ResponsiveCenter(
+        maxWidth: 1200,
+        child: Column(
+          children: [
+            // Dải báo lỗi (mất mạng, thiếu quyền...) hiện phía trên danh sách
+            if (vm.errorMessage != null)
+              _ErrorBanner(message: vm.errorMessage!),
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  if (vm.isLoading && vm.activeOrders.isEmpty) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (vm.activeOrders.isEmpty) {
+                    return const Center(
+                      child: Text("Không có đơn nào cần xử lý"),
                     );
-                  },
-                );
-              },
+                  }
+
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final columns = staffColumnsFor(constraints.maxWidth);
+                      // Trừ padding hai bên và khoảng cách giữa các cột.
+                      final cardWidth =
+                          (constraints.maxWidth -
+                              _spacing * 2 -
+                              _spacing * (columns - 1)) /
+                          columns;
+
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.all(_spacing),
+                        // Wrap (không phải GridView) vì mỗi thẻ cao khác nhau
+                        // tùy số món trong đơn.
+                        child: Wrap(
+                          spacing: _spacing,
+                          runSpacing: _spacing,
+                          children: [
+                            for (final order in vm.activeOrders)
+                              SizedBox(
+                                width: cardWidth,
+                                child: _OrderCard(
+                                  order: order,
+                                  priceFormat: priceFormat,
+                                  onChangeStatus: (status) => context
+                                      .read<StaffViewModel>()
+                                      .changeStatus(order, status),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -114,7 +148,8 @@ class _OrderCard extends StatelessWidget {
         .toList();
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      // Khoảng cách giữa các thẻ do Wrap lo (spacing/runSpacing).
+      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -123,10 +158,15 @@ class _OrderCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Đơn #${order.id}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                // Expanded + ellipsis: mã đơn dài không đẩy Chip ra ngoài thẻ hẹp.
+                Expanded(
+                  child: Text(
+                    "Đơn #${order.id}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Chip(label: Text(order.status.label)),
               ],
             ),
