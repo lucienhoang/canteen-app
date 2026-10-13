@@ -48,7 +48,7 @@ class _OrderTrackingBody extends StatelessWidget {
     final vm = context.watch<OrderTrackingViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Theo dõi đơn hàng"), centerTitle: true),
+      appBar: AppBar(title: const Text("Theo dõi đơn hàng")),
       body: Builder(
         builder: (context) {
           if (vm.isLoading) {
@@ -58,7 +58,10 @@ class _OrderTrackingBody extends StatelessWidget {
             return Center(
               child: Text(
                 vm.errorMessage!,
-                style: const TextStyle(fontSize: 16, color: Colors.red),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             );
           }
@@ -110,18 +113,19 @@ class _CancelledBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final error = Theme.of(context).colorScheme.error;
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.cancel_outlined, size: 56, color: Colors.red),
-          SizedBox(height: 12),
+          Icon(Icons.cancel_outlined, size: 56, color: error),
+          const SizedBox(height: 12),
           Text(
             'Đơn hàng đã bị huỷ',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.red,
+              color: error,
             ),
           ),
         ],
@@ -139,6 +143,8 @@ class _Timeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentIndex = _trackingSteps.indexOf(currentStatus);
+
+    final scheme = Theme.of(context).colorScheme;
 
     return Column(
       children: List.generate(_trackingSteps.length, (i) {
@@ -163,17 +169,13 @@ class _Timeline extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color.lerp(
-                          Colors.grey.shade300,
+                          scheme.outlineVariant,
                           Theme.of(context).colorScheme.primary,
                           value,
                         ),
                       ),
                       child: value > 0.5
-                          ? const Icon(
-                              Icons.check,
-                              size: 16,
-                              color: Colors.white,
-                            )
+                          ? Icon(Icons.check, size: 16, color: scheme.onPrimary)
                           : null,
                     );
                   },
@@ -186,7 +188,7 @@ class _Timeline extends StatelessWidget {
                     height: 40,
                     color: i < currentIndex
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey.shade300,
+                        : scheme.outlineVariant,
                   ),
               ],
             ),
@@ -197,7 +199,7 @@ class _Timeline extends StatelessWidget {
                 step.label,
                 style: TextStyle(
                   fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                  color: isActive ? null : Colors.grey,
+                  color: isActive ? null : scheme.onSurfaceVariant,
                 ),
               ),
             ),

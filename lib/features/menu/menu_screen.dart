@@ -8,6 +8,8 @@ import '../cart/cart_screen.dart';
 import '../cart/cart_viewmodel.dart';
 import '../auth/logout_button.dart';
 
+import '../../core/theme/app_theme.dart';
+
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
 class MenuScreen extends StatelessWidget {
@@ -93,9 +95,6 @@ class MenuScreen extends StatelessWidget {
             decoration: InputDecoration(
               hintText: 'Tìm kiếm món ăn...',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 0,
@@ -133,9 +132,9 @@ class MenuScreen extends StatelessWidget {
                 // Nếu còn hàng thì hiện Icon Thêm vào giỏ, nếu hết hàng thì hiện chữ "Hết hàng" màu đỏ
                 trailing: item.isAvailable
                     ? IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.add_shopping_cart,
-                          color: Colors.green,
+                          color: context.appColors.success,
                         ),
                         onPressed: () {
                           // Gọi ViewModel để thêm món vào giỏ
@@ -150,9 +149,11 @@ class MenuScreen extends StatelessWidget {
                           );
                         },
                       )
-                    : const Text(
+                    : Text(
                         "Hết hàng",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                 // Vô hiệu hóa (làm mờ) item nếu hết hàng
                 enabled: item.isAvailable,

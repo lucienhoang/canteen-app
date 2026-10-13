@@ -22,6 +22,7 @@ import 'features/menu/menu_viewmodel.dart';
 import 'features/staff/staff_screen.dart';
 
 import 'features/orders/order_notification_host.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,7 +64,7 @@ class CanteenApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Căn tin',
-        theme: ThemeData(colorSchemeSeed: Colors.orange, useMaterial3: true),
+        theme: AppTheme.light(),
         home: AuthGate(
           studentHome: const OrderNotificationHost(child: MenuScreen()),
           staffHome: Builder(
