@@ -109,7 +109,7 @@ class FirestoreOrderRepository implements OrderRepository {
     switch (code) {
       case 'unavailable':
       case 'deadline-exceeded':
-        return 'Không có kết nối mạng, kiểm tra lại rồi thử lại nhé';
+        return 'Không có kết nối mạng, kiểm tra rồi thử lại nhé';
       case 'permission-denied':
         return 'Bạn không có quyền thực hiện thao tác này';
       case 'unauthenticated':
