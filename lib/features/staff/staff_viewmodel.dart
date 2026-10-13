@@ -14,10 +14,7 @@ class StaffViewModel extends ChangeNotifier {
   /// [_onStatusChanged] được gọi sau khi đổi trạng thái thành công.
   /// Mặc định gửi thông báo thật; khi test có thể truyền hàm giả vào để
   /// không phụ thuộc plugin Android.
-  StaffViewModel({
-    required this._orderRepository,
-    Future<void> Function(Order order)? onStatusChanged,
-  }) : _onStatusChanged = onStatusChanged;
+  StaffViewModel({required this._orderRepository, this._onStatusChanged});
 
   final OrderRepository _orderRepository;
 
