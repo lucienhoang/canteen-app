@@ -6,6 +6,8 @@ import '../../data/models/order_status.dart';
 import '../../data/repositories/order_repository.dart';
 import 'order_tracking_viewmodel.dart';
 
+import '../../core/widgets/responsive_center.dart';
+
 /// Các bước hiển thị trên timeline theo đúng thứ tự luồng đơn hàng bình thường.
 /// [OrderStatus.cancelled] là nhánh rẽ riêng, không nằm trong timeline này.
 const _trackingSteps = [
@@ -49,60 +51,62 @@ class _OrderTrackingBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Theo dõi đơn hàng")),
-      body: Builder(
-        builder: (context) {
-          if (vm.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (vm.errorMessage != null) {
-            return Center(
-              child: Text(
-                vm.errorMessage!,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Theme.of(context).colorScheme.error,
+      body: ResponsiveCenter(
+        child: Builder(
+          builder: (context) {
+            if (vm.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (vm.errorMessage != null) {
+              return Center(
+                child: Text(
+                  vm.errorMessage!,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 ),
-              ),
+              );
+            }
+
+            final order = vm.order!;
+
+            // Đơn bị hủy -> Hiện Banner báo hủy riêng biệt
+            if (order.status == OrderStatus.cancelled) {
+              return const _CancelledBanner();
+            }
+
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text(
+                  'Đơn #${order.id}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 24),
+                _Timeline(currentStatus: order.status),
+                const SizedBox(height: 32),
+                Text(
+                  "Giờ lấy hẹn: ${DateFormat('HH:mm dd/MM/yyyy').format(order.pickupTime)}",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                if (order.note != null && order.note!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text("Ghi chú: ${order.note}"),
+                  ),
+                const Divider(height: 32),
+                ...order.items.map(
+                  (item) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(item.menuItemName),
+                    trailing: Text('x${item.quantity}'),
+                  ),
+                ),
+              ],
             );
-          }
-
-          final order = vm.order!;
-
-          // Đơn bị hủy -> Hiện Banner báo hủy riêng biệt
-          if (order.status == OrderStatus.cancelled) {
-            return const _CancelledBanner();
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                'Đơn #${order.id}',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 24),
-              _Timeline(currentStatus: order.status),
-              const SizedBox(height: 32),
-              Text(
-                "Giờ lấy hẹn: ${DateFormat('HH:mm dd/MM/yyyy').format(order.pickupTime)}",
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              if (order.note != null && order.note!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text("Ghi chú: ${order.note}"),
-                ),
-              const Divider(height: 32),
-              ...order.items.map(
-                (item) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(item.menuItemName),
-                  trailing: Text('x${item.quantity}'),
-                ),
-              ),
-            ],
-          );
-        },
+          },
+        ),
       ),
     );
   }

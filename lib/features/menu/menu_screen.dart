@@ -9,6 +9,7 @@ import '../cart/cart_viewmodel.dart';
 import '../auth/logout_button.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/responsive_center.dart';
 
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
@@ -53,7 +54,7 @@ class MenuScreen extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: _buildBody(context, vm),
+      body: ResponsiveCenter(child: _buildBody(context, vm)),
     );
   }
 
