@@ -151,7 +151,9 @@ class _OrderCard extends StatelessWidget {
                 final isCancel = status == OrderStatus.cancelled;
                 return OutlinedButton(
                   style: isCancel
-                      ? OutlinedButton.styleFrom(foregroundColor: Colors.red)
+                      ? OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        )
                       : null,
                   onPressed: () => onChangeStatus(status),
                   child: Text(isCancel ? "Hủy Đơn" : "Chuyển: ${status.label}"),
