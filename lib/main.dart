@@ -24,6 +24,11 @@ import 'features/staff/staff_screen.dart';
 import 'features/orders/order_notification_host.dart';
 import 'core/theme/app_theme.dart';
 
+import 'core/network/connectivity_service.dart';
+import 'core/network/connectivity_viewmodel.dart';
+import 'core/widgets/connectivity_banner_host.dart';
+import 'data/repositories/connectivity_guarded_order_repository.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -47,6 +52,12 @@ class CanteenApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Dịch vụ mạng phải đứng TRƯỚC những provider cần nó.
+        Provider<ConnectivityService>(create: (_) => PlusConnectivityService()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ConnectivityViewModel(context.read<ConnectivityService>()),
+        ),
         ChangeNotifierProvider(
           create: (_) =>
               AuthViewModel(FirebaseAuthRepository())..restoreSession(),
@@ -54,9 +65,14 @@ class CanteenApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => MenuViewmodel(MockMenuRepository())..load(),
         ),
-        // Một repository đơn hàng DÙNG CHUNG cho cả app (giỏ hàng, màn nhân viên,
-        // màn theo dõi). Phải đứng TRƯỚC CartViewModel vì CartViewModel đọc nó.
-        Provider<OrderRepository>(create: (_) => FirestoreOrderRepository()),
+        // Một repository đơn hàng DÙNG CHUNG cho cả app. Bọc thêm lớp chặn
+        // ghi khi offline; ViewModel không cần biết có lớp này.
+        Provider<OrderRepository>(
+          create: (context) => ConnectivityGuardedOrderRepository(
+            FirestoreOrderRepository(),
+            context.read<ConnectivityService>(),
+          ),
+        ),
         ChangeNotifierProvider(
           create: (context) =>
               CartViewModel(orderRepository: context.read<OrderRepository>()),
@@ -65,6 +81,7 @@ class CanteenApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Căn tin',
         theme: AppTheme.light(),
+        builder: (context, child) => ConnectivityBannerHost(child: child!),
         home: AuthGate(
           studentHome: const OrderNotificationHost(child: MenuScreen()),
           staffHome: Builder(
