@@ -8,6 +8,7 @@ import '../../data/models/order_status.dart';
 import '../../data/repositories/order_repository.dart';
 import 'staff_viewmodel.dart';
 import '../auth/logout_button.dart';
+import '../../core/widgets/skeleton_list.dart';
 
 /// Màn hình nhân viên căn tin: xem đơn mới, cập nhật trạng thái đơn.
 class StaffScreen extends StatelessWidget {
@@ -58,7 +59,8 @@ class _StaffBody extends StatelessWidget {
               child: Builder(
                 builder: (context) {
                   if (vm.isLoading && vm.activeOrders.isEmpty) {
-                    return const Center(child: CircularProgressIndicator());
+                    // Dùng biến thể cards dành riêng cho màn hình này
+                    return const SkeletonList.cards();
                   }
                   if (vm.activeOrders.isEmpty) {
                     return const Center(

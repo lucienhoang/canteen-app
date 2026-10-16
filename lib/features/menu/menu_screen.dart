@@ -10,6 +10,7 @@ import '../auth/logout_button.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/responsive_center.dart';
+import '../../core/widgets/skeleton_list.dart';
 
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
@@ -62,7 +63,8 @@ class MenuScreen extends StatelessWidget {
   Widget _buildBody(BuildContext context, MenuViewmodel vm) {
     // 1. Trạng thái đnag tải dữ liệu
     if (vm.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      // Dùng biến thể mặc định (SkeletonType.list)
+      return const SkeletonList();
     }
 
     // 2. Trạng thái gặp lỗi khi tải dữ liệu

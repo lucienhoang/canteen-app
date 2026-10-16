@@ -7,6 +7,7 @@ import '../../data/repositories/order_repository.dart';
 import 'order_tracking_viewmodel.dart';
 
 import '../../core/widgets/responsive_center.dart';
+import '../../core/widgets/skeleton_list.dart';
 
 /// Các bước hiển thị trên timeline theo đúng thứ tự luồng đơn hàng bình thường.
 /// [OrderStatus.cancelled] là nhánh rẽ riêng, không nằm trong timeline này.
@@ -55,7 +56,8 @@ class _OrderTrackingBody extends StatelessWidget {
         child: Builder(
           builder: (context) {
             if (vm.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+              // Hiển thị dạng thẻ, có thể tùy chỉnh số thẻ giả (ví dụ: 3)
+              return const SkeletonList.cards(itemCount: 3);
             }
             if (vm.errorMessage != null) {
               return Center(
