@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'page_transitions.dart';
 
 /// Màu ngữ nghĩa mà [ColorScheme] của Material 3 không có sẵn (màu "thành công").
 /// Dùng qua: `context.appColors.success`.
@@ -48,6 +49,17 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: SlideFadePageTransitionsBuilder(),
+          TargetPlatform.iOS: SlideFadePageTransitionsBuilder(),
+          TargetPlatform.windows: SlideFadePageTransitionsBuilder(),
+          TargetPlatform.macOS: SlideFadePageTransitionsBuilder(),
+          TargetPlatform.linux: SlideFadePageTransitionsBuilder(),
+        },
+      ),
+
       extensions: <ThemeExtension<dynamic>>[
         AppColors(success: Colors.green.shade700, onSuccess: Colors.white),
       ],
