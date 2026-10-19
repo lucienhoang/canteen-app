@@ -180,9 +180,49 @@ class _OrderCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
+
+            const Divider(height: 16), // Thêm đường kẻ phân cách cho đẹp
+
+            // --- PHẦN THÊM MỚI: GIỜ LẤY ---
+            Row(
+              children: [
+                Icon(Icons.access_time, size: 16, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 4),
+                Text(
+                  "Giờ lấy: ${order.pickupTime.hour.toString().padLeft(2, '0')}:${order.pickupTime.minute.toString().padLeft(2, '0')}",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+
+            // --- PHẦN THÊM MỚI: GHI CHÚ ---
+            if (order.note != null && order.note!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.notes, size: 16, color: Colors.orange),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        "Ghi chú: ${order.note}",
+                        style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             const SizedBox(height: 8),
             ...order.items.map(
-              (item) => Text("${item.menuItemName} x ${item.quantity}"),
+                  (item) => Text("${item.menuItemName} x ${item.quantity}"),
             ),
             const SizedBox(height: 4),
             Text("Tổng: ${priceFormat.format(order.totalAmount)}đ"),
@@ -194,8 +234,8 @@ class _OrderCard extends StatelessWidget {
                 return OutlinedButton(
                   style: isCancel
                       ? OutlinedButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                        )
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  )
                       : null,
                   onPressed: () => onChangeStatus(status),
                   child: Text(isCancel ? "Hủy Đơn" : "Chuyển: ${status.label}"),

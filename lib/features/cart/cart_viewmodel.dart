@@ -118,7 +118,7 @@ class CartViewModel extends ChangeNotifier {
           userMssv: userMssv,
           items: List.of(_items),
           pickupTime: pickupTime,
-          note: note,
+          note: (note != null && note.trim().isNotEmpty) ? note.trim() : null,
           createdAt: DateTime.now(),
         ),
       );
