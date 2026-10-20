@@ -11,6 +11,7 @@ import '../auth/logout_button.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/responsive_center.dart';
 import '../../core/widgets/skeleton_list.dart';
+import '../orders/my_orders_button.dart';
 
 /// Màn hình hiển thị thực đơn (UI Layer).
 /// Chỉ đóng vai trò hiển thị trạng thái và chuyển tương tác người dùng cho [MenuViewmodel].
@@ -28,6 +29,7 @@ class MenuScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Menu căn tin"),
         actions: [
+          const MyOrdersButton(), // nút giỏ hàng
           // Dùng Consumer hoặc watch để lắng nghe số lượng món trong giỏ
           Builder(
             builder: (context) {
