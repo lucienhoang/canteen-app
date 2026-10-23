@@ -1,112 +1,111 @@
-# Quy trình làm việc nhóm: Đồ án App đặt món căn tin
+# Hướng dẫn đóng góp (CONTRIBUTING)
 
-Repo: https://github.com/lucienhoang/canteen-app
+Đồ án **App đặt món căn tin** (Flutter + Firebase), làm nhóm 2 người.
+File này mô tả cách làm việc chung để code không đè lên nhau và `develop` luôn chạy được.
 
-Mốc chính: khoảng 11/10 kiểm tra luồng chính (đặt món → theo dõi đơn), 19/10 đóng băng tính năng, khoảng 25/10 demo.
+## 1. Nguyên tắc
 
-## 1. Nguyên tắc chung
+- Nhánh `develop` là nhánh chính, **có bảo vệ**: không push thẳng, mọi thay đổi đi qua Pull Request (PR).
+- Mỗi việc = một Issue = một nhánh = một PR. Nhánh nhỏ, PR nhỏ thì dễ xem và ít xung đột.
+- Việc được giao qua GitHub Issues + Projects. Nhận việc nào thì gán tên mình vào Issue đó.
+- Được dùng AI hỗ trợ, nhưng **phải giải thích được code mình nộp** (môn học yêu cầu).
 
-- Không ai push thẳng lên `main` hay `develop`. Mọi thay đổi đều đi qua nhánh riêng và Pull Request (PR).
-- `main` là bản ổn định để nộp và demo, `develop` là nơi hai người gộp code, còn mỗi việc làm trên một nhánh riêng (`feature/...`, `fix/...`, `docs/...`).
-- Ai làm phần nào thì làm trong thư mục của phần đó (xem mục 6) để hạn chế đụng file của nhau.
-- Có gì không hiểu, kẹt quá thì alo luôn. Hỏi sớm rẻ hơn sửa muộn.
+## 2. Quy trình cho mỗi việc
 
-## 2. Cài đặt lần đầu (chỉ làm một lần)
+1. **Tạo nhánh từ `develop` mới nhất** (làm TRƯỚC khi sửa file):
+   ```bash
+   git checkout develop
+   git pull
+   flutter pub get
+   git checkout -b feature/ten-viec
+   ```
+2. **Code** trong phạm vi Issue. Vướng thì hỏi ngay trong Issue.
+3. **Kiểm tra** (xem mục 5).
+4. **Commit và push**:
+   ```bash
+   git status
+   git add <từng file>
+   git commit -m "feat: mô tả ngắn"
+   git push -u origin feature/ten-viec
+   ```
+5. **Mở PR** vào `develop`, điền đủ mẫu mô tả (GitHub tự điền sẵn khung).
+6. **Người còn lại xem PR**, chạy `flutter test` trên nhánh đó rồi mới merge.
+7. **Dọn nhánh** sau khi PR đã merge:
+   ```bash
+   git checkout develop
+   git pull
+   flutter pub get
+   git branch -d feature/ten-viec
+   git remote prune origin
+   ```
+   Chỉ xóa nhánh trên GitHub **sau khi** PR đã merge.
 
-```
-git config --global user.name "Tên bạn"
-git config --global user.email "email-dùng-cho-github"
-git clone https://github.com/lucienhoang/canteen-app.git
-cd canteen-app
-git checkout develop
-flutter pub get
-```
+## 3. Đặt tên
 
-Nhớ chấp nhận lời mời cộng tác (Collaborator) trong email hoặc phần Notifications trên GitHub trước khi clone.
+**Nhánh:** `<loại>/<tên-ngắn-gạch-ngang>`
 
-## 3. Vòng làm việc cho mỗi việc mới
+| Loại        | Dùng cho                        | Ví dụ                       |
+| ----------- | ------------------------------- | --------------------------- |
+| `feature/`  | Tính năng mới                   | `feature/app-theme`         |
+| `fix/`      | Sửa lỗi                         | `fix/restore-logout-button` |
+| `refactor/` | Đổi cấu trúc, không đổi hành vi | `refactor/order-id-string`  |
+| `docs/`     | Tài liệu                        | `docs/contributing`         |
+| `chore/`    | Dọn dẹp, cấu hình               | `chore/cleanup`             |
 
-```
-git checkout develop
-git pull                            # luôn pull trước khi bắt đầu
-git checkout -b feature/ten-viec    # ví dụ: feature/menu-screen
-# ... viết code ...
+**Commit:** `<loại>: mô tả ngắn` (feat, fix, refactor, docs, chore, test), ví dụ `feat: add shared app theme`.
+
+## 4. Quy ước code
+
+- **Kiến trúc:** MVVM + Repository, quản lý trạng thái bằng Provider (`ChangeNotifier`).
+  Màn hình chỉ hiển thị; logic nằm ở ViewModel; dữ liệu nằm ở Repository.
+- **Tham số khởi tạo** dùng private named parameters:
+  `required this._orderRepository` (gọi bằng `orderRepository:`).
+  Riêng `AuthViewModel` và `MenuViewmodel` nhận tham số vị trí.
+- **Trùng tên `Order`:** `cloud_firestore` cũng xuất ra tên `Order`, nên khi import phải viết
+  `import 'package:cloud_firestore/cloud_firestore.dart' hide Order;` (hoặc `show ...`).
+- **Giao diện:**
+  - Màu và kiểu chữ lấy từ theme (`Theme.of(context).colorScheme`, `context.appColors.success`), không viết `Colors.red/green/grey`.
+  - Bọc nội dung màn hình trong `ResponsiveCenter` (`lib/core/widgets/`).
+  - Thử ở nhiều kích thước: điện thoại dọc/ngang, tablet, Chrome rộng.
+- **Dữ liệu và bảo mật:**
+  - Ghi Firestore dùng transaction (xem `FirestoreOrderRepository`).
+  - Quy tắc chuyển trạng thái đơn nằm ở **hai nơi phải khớp nhau**: `canChangeTo` (trong app) và `validTransition` (trong `firestore.rules`).
+  - File `firestore.rules` là nguồn chính thức; áp dụng bằng cách dán vào Firebase Console → Publish.
+- **Sửa file có sẵn:** phân biệt rõ "thêm dòng mới" và "thay dòng cũ", đừng làm mất dòng `return`.
+
+## 5. Kiểm tra trước khi mở PR
+
+```bash
 flutter test
-flutter analyze                     # cả hai đều phải sạch
-git add .
-git commit -m "feat: mô tả ngắn"
-git push -u origin feature/ten-viec
+flutter analyze
 ```
 
-Sau đó lên GitHub bấm **Compare & pull request**, chọn đích là `develop`, viết vài dòng mô tả những gì đã làm, rồi nhờ người còn lại review.
+Cả hai phải sạch. Sau đó thử tay:
 
-## 4. Quy ước đặt tên
+- Máy ảo Android (sinh viên) và Chrome (nhân viên), mở **hai terminal**:
+  ```bash
+  flutter run -d emulator-5554
+  flutter run -d chrome
+  ```
+- Chạy `flutter run -d <id>` trực tiếp trong terminal, không chọn thiết bị bằng menu VS Code (từng gây xung đột cổng).
+- Đừng mở hai tab Chrome cùng một app (cache offline của web chỉ hỗ trợ một tab).
+- Test dùng Mock; Firebase thật không chạy trong `flutter test`.
+- `testWidgets` có `Future.delayed` thật thì bọc trong `tester.runAsync`; widget có stream thì cần `tester.pump()`.
 
-**Nhánh:** viết thường, nối bằng gạch ngang.
+## 6. Mô tả PR
 
-- `feature/ten-viec` cho tính năng mới
-- `fix/ten-loi` cho sửa lỗi
-- `docs/ten-tai-lieu` cho tài liệu, báo cáo
+Gồm 5 mục: **Mục đích / Đã làm / Quyết định thiết kế / Cách kiểm tra / Giới hạn hoặc việc sau**.
+Mục "Giới hạn" của các PR là tư liệu cho phần hạn chế trong báo cáo.
 
-**Commit:** bắt đầu bằng loại việc rồi tới mô tả ngắn.
+## 7. Lỗi hay gặp
 
-- `feat:` tính năng mới, ví dụ `feat: add menu list screen`
-- `fix:` sửa lỗi, ví dụ `fix: wrong cart total`
-- `docs:` tài liệu, báo cáo
-- `test:` thêm hoặc sửa test
-- `chore:` việc lặt vặt, cấu hình
-
-**File Dart:** viết thường, nối bằng gạch dưới, ví dụ `menu_screen.dart`, `cart_viewmodel.dart`.
-
-**Class:** viết hoa chữ đầu mỗi từ, ví dụ `MenuScreen`, `CartViewModel`.
-
-## 5. Quy ước Pull Request và review
-
-- Mỗi PR chỉ làm **một việc**, nhỏ và gọn (một màn hình hoặc một tính năng). PR nhỏ thì dễ review và ít xung đột.
-- Trước khi tạo PR: `flutter test` và `flutter analyze` phải sạch, và app phải chạy được.
-- Người còn lại review trong vòng 1 ngày. Có chỗ cần sửa thì comment ngay trên PR, sửa xong push thêm lên cùng nhánh, PR tự cập nhật.
-- Review xong thì merge vào `develop`, rồi bấm **Delete branch** trên GitHub để xóa nhánh trên mạng.
-- Sau khi merge, dọn dẹp trên máy của mình:
-
-```
-git checkout develop
-git pull                             # lấy bản develop đã gộp code
-git branch -d feature/ten-viec       # xóa nhánh đã làm xong ở máy
-git fetch --prune                    # xóa các nhánh đã bị xóa trên GitHub khỏi danh sách
-```
-
-Dùng `-d` (chữ thường) thì Git chỉ xóa khi nhánh đã được gộp, nên không lo xóa nhầm việc chưa xong. Nếu Git báo nhánh "chưa được gộp" dù bạn đã merge PR xong, hỏi nhau trước khi dùng `-D`.
-
-## 6. Cấu trúc thư mục và phân việc
-
-```
-lib/
-  core/          dùng chung: theme, hằng số
-  data/          models, repositories (dữ liệu)
-  features/
-    menu/        màn hình menu, chi tiết món
-    cart/        giỏ hàng, đặt đơn
-    orders/      theo dõi đơn, lịch sử đơn
-    staff/       màn hình nhân viên căn tin
-```
-
-Mỗi tính năng trong `features/` gồm màn hình (View) và ViewModel riêng. Các file dùng chung (`core/`, `main.dart`, `pubspec.yaml`) chỉ một người sửa, người kia cần gì thì nhắn để tránh xung đột.
-
-## 7. Quy ước code
-
-- Kiến trúc MVVM: View chỉ lo hiển thị, logic nằm trong ViewModel, việc lấy/lưu dữ liệu nằm trong Repository.
-- Quản lý trạng thái bằng Provider.
-- Không để logic tính toán trong widget. Đặt vào ViewModel để dễ test.
-- Có comment ngắn ở đoạn logic khó hiểu, vì cả hai đều phải giải thích được code của mình khi bảo vệ.
-
-## 8. Cách phối hợp
-
-- Việc được chia bằng **GitHub Issues** và bảng **Projects**. Mỗi việc là một issue có người phụ trách, chuyển cột theo tiến độ: To do → Doing → Review → Done.
-- Họp nhanh 2-3 lần một tuần (10-15 phút, gọi hoặc nhắn) để báo tiến độ và gỡ vướng.
-- Nếu gặp xung đột khi gộp code (conflict), đừng tự xóa lung tung, nhắn cho nhau xem cùng.
-
-## 9. Việc cần làm ngay
-
-1. Chấp nhận lời mời vào repo và cài môi trường Flutter.
-2. Clone repo, chạy thử `flutter test` để chắc máy ổn.
-3. Nhận việc đầu tiên trong mục Issues.
+| Sự cố                                                                                                                                | Cách xử lý                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Hàng loạt lỗi `undefined_class` sau khi pull                                                                                         | Quên `flutter pub get`                                                                                  |
+| `git pull` báo vướng 3 file tự sinh (`GeneratedPluginRegistrant.swift`, `generated_plugin_registrant.cc`, `generated_plugins.cmake`) | `git checkout -- <file>` rồi pull lại                                                                   |
+| 3 file tự sinh lẫn vào PR                                                                                                            | Đừng `git add .`; add từng file                                                                         |
+| Lỡ commit nhầm trên `develop`                                                                                                        | Tạo nhánh tại chỗ (`git checkout -b feature/...`), push nhánh đó, rồi trả `develop` về `origin/develop` |
+| Xóa nhánh GitHub trước khi merge                                                                                                     | `git push -u origin <nhánh>` rồi Reopen PR                                                              |
+| Máy ảo mất kết nối adb                                                                                                               | `adb kill-server` rồi `adb start-server`; Cold Boot máy ảo; đóng VMware khi chạy emulator               |
+| `flutter_local_notifications` đòi desugaring                                                                                         | Bật `isCoreLibraryDesugaringEnabled` trong `android/app/build.gradle.kts`                               |
+| Plugin không build trên Windows                                                                                                      | Bật Developer Mode của Windows                                                                          |

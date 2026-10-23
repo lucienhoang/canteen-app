@@ -33,7 +33,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  debugPrint('Firebase OK: ${Firebase.app().options.projectId}');
 
   // Bật cache offline của Firestore: dữ liệu đã tải vẫn hiện được khi mất mạng.
   FirebaseFirestore.instance.settings = const Settings(
